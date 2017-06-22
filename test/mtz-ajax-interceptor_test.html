@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>mtz-ajax-interceptor test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../mtz-ajax-interceptor-behavior.html">
+  </head>
+  <body>
+    <dom-module id="mtz-ajax-interceptor">
+      <script>
+        Polymer({
+          is: 'mtz-ajax-interceptor',
+          behaviors: [mtz.AjaxInterceptorBehavior]
+        });
+      </script>
+    </dom-module>
+
+    <test-fixture id="basic">
+      <template>
+        <mtz-ajax-interceptor></mtz-ajax-interceptor>
+      </template>
+    </test-fixture>
+
+    <script>
+      describe('mtz-ajax-interceptor', () => {
+        let element;
+
+        beforeEach(() => {
+          element = fixture('basic');
+        });
+
+        it('should instantiate the element', () => {
+          expect(element.is).to.equal('mtz-ajax-interceptor');
+        });
+      });
+    </script>
+  </body>
+</html>

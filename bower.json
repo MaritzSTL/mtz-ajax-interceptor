@@ -1,0 +1,14 @@
+{
+  "name": "mtz-ajax-interceptor",
+  "description": "A group of elements to support intercepting ajax requests for injecting headers or handling responses globally.",
+  "main": "all-imports.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.9.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  }
+}

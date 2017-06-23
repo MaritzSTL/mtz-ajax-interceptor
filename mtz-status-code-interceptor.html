@@ -1,0 +1,41 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="./mtz-interceptor-behavior.html">
+
+
+<!--
+`mtz-status-code-interceptor`
+An implementation of the mtz.InterceptorBehavior that compares a status property against the status code in the event
+to determine if the interceptor logic should run or not.
+-->
+<dom-module id="mtz-status-code-interceptor">
+  <script>
+    Polymer({
+      is: 'mtz-status-code-interceptor',
+      behaviors: [mtz.InterceptorBehavior],
+      properties: {
+        /* The status code check against for this interceptor */
+        status: Number,
+        /* The events to trigger status code checks against */
+        eventNames: {
+          type: Array,
+          value() {
+            return ['response', 'upload-response'];
+          }
+        }
+      },
+      /**
+       * Checks the status code of the event triggering the interceptor, if it is a match for the status code then
+       *  the intercept event gets fired.
+       * @fires mtz.InterceptorBehavior#intercept
+       *
+       * @param {CustomEvent} event - the event that triggered the interceptor
+       * @param {Number} [status = this.status] - the status code to check against
+       */
+      intercept(event, status = this.status) {
+        // TODO: check this to make sure the code in the event is actually lined up
+        if (Number(status) === Number(event.code))
+          this._fireInterceptEvent(event);
+      }
+    });
+  </script>
+</dom-module>

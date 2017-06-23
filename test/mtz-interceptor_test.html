@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>mtz.InterceptorBehavior test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../mtz-interceptor-behavior.html">
+  </head>
+  <body>
+    <dom-module id="mtz-interceptor">
+      <script>
+        Polymer({
+          is: 'mtz-interceptor',
+          behaviors: [mtz.InterceptorBehavior]
+        });
+      </script>
+    </dom-module>
+
+    <test-fixture id="basic">
+      <template>
+        <mtz-interceptor></mtz-interceptor>
+      </template>
+    </test-fixture>
+
+    <script>
+      describe('mtz.InterceptorBehavior', () => {
+        const tFix = document.querySelector('#basic');
+        let element;
+
+        beforeEach(() => {
+          element = fixture('basic');
+        });
+
+        /* Lifecycle Events */
+        describe('attached()', () => {
+          it('should register the interceptor', (done) => {
+            // Attached listeners have to be attached to the element before it's created, so in this case since it's
+            //  bubbling I'm attaching it to the test-fixture element that wraps it.
+            function listener(event) {
+              expect(event.detail.is).to.equal('mtz-interceptor');
+              tFix.removeEventListener('register-interceptor', listener);
+              done();
+            }
+            tFix.addEventListener('register-interceptor', listener);
+            tFix.create();
+          });
+        });
+        describe('detached()', () => {
+          it('should unregister the interceptor', (done) => {
+            element.addEventListener('unregister-interceptor', (event) => {
+              expect(event.detail.is).to.equal('mtz-interceptor');
+              done();
+            });
+            tFix.restore();
+          });
+        });
+        /* Public Methods */
+        describe('intercept(event)', () => {
+          it('should call the protected _fireInterceptEvent method', () => {
+            const e = 'e';
+
+            element._fireInterceptEvent = sinon.spy();
+            element.intercept(e);
+            expect(element._fireInterceptEvent.calledWith(e)).to.equal(true);
+          });
+        });
+        /* Protected Methods */
+        describe('_fireInterceptEvent(event)', () => {
+          it('should fire the intercept event', (done) => {
+            const e = 'test';
+            element.addEventListener('intercept', (event) => {
+              expect(event.detail).to.equal(e);
+              done();
+            });
+            element.intercept(e);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

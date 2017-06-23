@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>mtz-status-code-interceptor test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../mtz-status-code-interceptor.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <mtz-status-code-interceptor></mtz-status-code-interceptor>
+      </template>
+    </test-fixture>
+
+    <script>
+      describe('mtz-status-code-interceptor', () => {
+        let element;
+
+        beforeEach(() => {
+          element = fixture('basic');
+        });
+
+        /* Public Methods */
+        describe('intercept(event, status = this.status)', () => {
+          const event = {
+            code: 419
+          };
+
+          beforeEach(() => {
+            element._fireInterceptEvent = sinon.spy();
+          });
+
+          it('should call _fireInterceptEvent if the status matches', () => {
+            element.status = 419;
+            element.intercept(event);
+            expect(element._fireInterceptEvent.calledWithMatch(event)).to.equal(true);
+          });
+          it('should not call _fireInterceptEvent if the status does not match', () => {
+            element.status = 204;
+            element.intercept(event);
+            expect(element._fireInterceptEvent.called).to.equal(false);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<script>
+  window.mtz = window.mtz || {};
+
+  /**
+   * `mtz.InterceptorBehavior`
+   * Used to create an instance of an interceptor that allows for declarative registration for binding logic to a
+   *  bubbling event that is not a child of the element.
+   *
+   * @polymerBehavior mtz.InterceptorBehavior
+   */
+  mtz.InterceptorBehavior = {
+    properties: {
+      /* The array of event names to attach this interceptor to */
+      eventNames: Array,
+      /**
+       * Moves this interceptor up/down the priority list when being triggered, multiple interceptors with the same
+       *  priority will fire in the order they were attached.
+       */
+      priority: {
+        type: Number,
+        value: 0
+      }
+    },
+    /**
+     * Register this element for intercepting events.
+     * @fires mtz.InterceptorBehavior#register-interceptor
+     */
+    attached() {
+      const event = new CustomEvent('register-interceptor', {
+        detail: this,
+        bubbles: true
+      });
+      this.dispatchEvent(event);
+    },
+    /**
+     * Unregister this element from intercepting events.
+     * @fires mtz.InterceptorBehavior#unregister-interceptor
+     */
+    detached() {
+      const event = new CustomEvent('unregister-interceptor', {
+        detail: this,
+        bubbles: true
+      });
+      this.dispatchEvent(event);
+    },
+    /**
+     * Called when one of the events in eventsNames was captured, the captured event is then passed to this function.
+     *
+     * @param {CustomEvent} event - the captured event that triggered this interceptor.
+     */
+    intercept(event) {
+      this._fireInterceptEvent(event);
+    },
+    /**
+     * Used to fire the event that will trigger custom logic for this interceptor.
+     * @protected
+     * @fires mtz.InterceptorBehavior#intercept
+     *
+     * @param {CustomEvent} event - the captured event that triggered this interceptor.
+     */
+    _fireInterceptEvent(event) {
+      // TODO: figure out a way to chain together these events
+      const e = new CustomEvent('intercept', {
+        detail: event
+      });
+      this.dispatchEvent(e);
+    }
+  };
+
+  /**
+   * Intercept event, fired by this element to trigger custom logic when an event is intercepted.
+   *
+   * @event mtz.InterceptorBehavior#intercept
+   * @type {Object}
+   * @property {CustomEvent} detail - the original event that triggered the interceptor.
+   */
+  /**
+   * Fired to notify a parent instance of mtz.AjaxInterceptorBehavior to register the firing element.
+   *
+   * @event mtz.InterceptorBehavior#register-interceptor
+   * @property {HTMLElement} detail - the firing element
+   */
+  /**
+   * Fired to notify a parent instance of mtz.AjaxInterceptorBehavior to unregister this element.
+   *
+   * @event mtz.InterceptorBehavior#unregister-interceptor
+   * @property {HTMLElement} detail - the firing element
+   */
+</script>

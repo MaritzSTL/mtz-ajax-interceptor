@@ -9,18 +9,9 @@
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
-    <link rel="import" href="../mtz-interceptor-behavior.html">
+    <link rel="import" href="mtz-interceptor.html">
   </head>
   <body>
-    <dom-module id="mtz-interceptor">
-      <script>
-        Polymer({
-          is: 'mtz-interceptor',
-          behaviors: [mtz.InterceptorBehavior]
-        });
-      </script>
-    </dom-module>
-
     <test-fixture id="basic">
       <template>
         <mtz-interceptor></mtz-interceptor>

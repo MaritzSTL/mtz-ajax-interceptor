@@ -9,18 +9,9 @@
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
-    <link rel="import" href="../mtz-ajax-interceptor-behavior.html">
+    <link rel="import" href="mtz-ajax-interceptor.html">
   </head>
   <body>
-    <dom-module id="mtz-ajax-interceptor">
-      <script>
-        Polymer({
-          is: 'mtz-ajax-interceptor',
-          behaviors: [mtz.AjaxInterceptorBehavior]
-        });
-      </script>
-    </dom-module>
-
     <test-fixture id="basic">
       <template>
         <mtz-ajax-interceptor></mtz-ajax-interceptor>

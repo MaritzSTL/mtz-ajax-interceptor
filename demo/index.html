@@ -10,7 +10,10 @@
 
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../mtz-ajax-interceptor.html">
+    <link rel="import" href="mtz-ajax-interceptor.html">
+    <link rel="import" href="../mtz-status-code-interceptor.html">
+    <link rel="import" href="../mtz-presend-header-interceptor.html">
+    <link rel="import" href="../../iron-ajax/iron-ajax.html">
 
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
@@ -20,7 +23,62 @@
       <h3>Basic mtz-ajax-interceptor demo</h3>
       <demo-snippet>
         <template>
-          <mtz-ajax-interceptor></mtz-ajax-interceptor>
+          <test-el></test-el>
+          <dom-module id="test-el">
+            <template>
+              <mtz-ajax-interceptor>
+                <mtz-status-code-interceptor
+                  status="200"
+                  on-intercept="statusCodeInterceptor"
+                ></mtz-status-code-interceptor>
+                <template is="dom-if" if="[[headerInterceptor]]" restamp>
+                  <mtz-status-code-interceptor
+                    status="200"
+                    on-intercept="statusCodeInterceptor"
+                  ></mtz-status-code-interceptor>
+                  <mtz-presend-header-interceptor
+                    key="header"
+                    value="test"
+                  ></mtz-presend-header-interceptor>
+                </template>
+
+                <iron-ajax url="/fake" id="ajax" bubbles></iron-ajax>
+              </mtz-ajax-interceptor>
+              <p>
+                [[statusCodeIntercepted]]
+              </p>
+              <label>
+                Inject additional interceptors
+                <input type="checkbox" checked="{{headerInterceptor::change}}">
+              </label>
+              <br>
+              <button on-tap="intercept">Trigger Interceptors</button>
+            </template>
+            <script>
+              Polymer({
+                is: 'test-el',
+                properties: {
+                  headerInterceptor: {
+                    type: Boolean,
+                    value: false
+                  },
+                  statusCodeIntercepted: {
+                    type: String,
+                    value: ''
+                  }
+                },
+                listeners: {
+                  intercept: '_log'
+                },
+                intercept() {
+                  this.$.ajax.generateRequest();
+                },
+                statusCodeInterceptor() {
+                  this.statusCodeIntercepted = this.statusCodeIntercepted.concat('intercepted! ');
+                }
+              });
+            </script>
+          </dom-module>
         </template>
       </demo-snippet>
     </div>

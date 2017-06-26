@@ -12,8 +12,8 @@
    */
   mtz.InterceptorBehavior = {
     properties: {
-      /* The array of event names to attach this interceptor to */
-      eventNames: Array,
+      /* The array of events, contains the name and path, path is used for doing lookups for data */
+      events: Array,
       /**
        * Moves this interceptor up/down the priority list when being triggered, multiple interceptors with the same
        *  priority will fire in the order they were attached.
@@ -30,7 +30,8 @@
     attached() {
       const event = new CustomEvent('register-interceptor', {
         detail: this,
-        bubbles: true
+        bubbles: true,
+        composed: true
       });
       this.dispatchEvent(event);
     },
@@ -41,17 +42,18 @@
     detached() {
       const event = new CustomEvent('unregister-interceptor', {
         detail: this,
-        bubbles: true
+        composed: true
       });
       this.dispatchEvent(event);
     },
     /**
      * Called when one of the events in eventsNames was captured, the captured event is then passed to this function.
      *
-     * @param {CustomEvent} event - the captured event that triggered this interceptor.
+     * @param {CustomEvent} event - the captured event that triggered this interceptor
+     * @param {String} eventName - the event name that triggered the intercept
      */
-    intercept(event) {
-      this._fireInterceptEvent(event);
+    intercept(event, eventName) {
+      this._fireInterceptEvent(event, eventName);
     },
     /**
      * Used to fire the event that will trigger custom logic for this interceptor.
@@ -61,9 +63,9 @@
      * @param {CustomEvent} event - the captured event that triggered this interceptor.
      */
     _fireInterceptEvent(event) {
-      // TODO: figure out a way to chain together these events
       const e = new CustomEvent('intercept', {
-        detail: event
+        detail: event,
+        composed: true
       });
       this.dispatchEvent(e);
     }

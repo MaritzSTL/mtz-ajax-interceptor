@@ -1,0 +1,56 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="mtz-interceptor-behavior.html">
+
+<!--
+`mtz-presend-header-interceptor`
+An implementation of the mtz.InterceptorBehavior that injects a header:value onto a presend event for iron-ajax.
+-->
+<dom-module id="mtz-presend-header-interceptor">
+  <script>
+    Polymer({
+      is: 'mtz-presend-header-interceptor',
+      behaviors: [mtz.InterceptorBehavior],
+      properties: {
+        /* The events to intercept against */
+        events: {
+          type: Array,
+          value() {
+            return [
+              {
+                name: 'iron-ajax-presend',
+                path: 'detail.options.headers'
+              }
+            ];
+          }
+        },
+        /* The header name to attach to the ajax request */
+        key: String,
+        /* The value to associate with the provided header */
+        value: String
+      },
+      /**
+       * Attaches a header to the ajax request.
+       * @protected
+       *
+       * @param {CustomEvent} event - the event containing the ajax request
+       * @param {String} eventName - the name of the event
+       */
+      _applyHeader(event, eventName) {
+        const path = (this.events.find((item) => item.name === eventName) || {}).path;
+        if (path)
+          this.set(`${path}.${this.key}`, this.value, event);
+      },
+      /**
+       * Checks the status code of the event triggering the interceptor, if it is a match for the status code then
+       *  the intercept event gets fired.
+       * @fires mtz.InterceptorBehavior#intercept
+       *
+       * @param {CustomEvent} event - the event that triggered the interceptor
+       * @param {String} eventName - the name of the event that triggered this intercept
+       */
+      intercept(event, eventName) {
+        this._applyHeader(event, eventName);
+      }
+    });
+  </script>
+</dom-module>

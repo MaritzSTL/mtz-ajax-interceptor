@@ -4,9 +4,127 @@
   window.mtz = window.mtz || {};
 
   /**
-   * `mtz.AjaxInterceptorBehavior`
+   * `mtz.AjaxInterceptorBehavior` handles registering declarative interceptors then listening for all registered events
+   *  and calling the interceptors associated with those events.
    *
    * @polymerBehavior mtz.AjaxInterceptorBehavior
    */
-  mtz.AjaxInterceptorBehavior = {};
+  mtz.AjaxInterceptorBehavior = {
+    properties: {
+      /* The map of event to interceptor Set to listen against */
+      interceptors: {
+        type: Object,
+        value() {
+          return {};
+        }
+      }
+    },
+    attached() {
+      this.addEventListener('register-interceptor', this.__registerInterceptor.bind(this));
+    },
+    detached() {
+      this.removeEventListener('register-interceptor', this.__registerInterceptor.bind(this));
+      // Remove all active event listeners
+      Object.keys(this.interceptors).forEach((key) => {
+        this.__unregisterEventListener(key);
+      });
+    },
+    /**
+     * Runs all interceptors associated with the event, passing along the event to the interceptors chained together.
+     *
+     * @param {String} eventName - the event name that triggered the interceptor
+     * @param {Event} event - the event that triggered the interceptor logic
+     */
+    runInterceptors(eventName, event) {
+      const interceptors = this.interceptors[eventName];
+      if (!event || !interceptors) return;
+
+      // Override stopImmediatePropagation so we can break out if needed.
+      const stopProp = event.stopImmediatePropagation;
+      let stopPropagation = false;
+      event.stopImmediatePropagation = () => {
+        stopPropagation = true;
+      };
+
+      for (const interceptor of Array.from(interceptors).sort((a, b) => b.priority - a.priority)) {
+        if (event.defaultPrevented || stopPropagation)
+          break;
+        interceptor.intercept(event, eventName);
+      }
+
+      // Restore stopImmediatePropagation incase it's needed.
+      event.stopImmediatePropagation = stopProp;
+
+      // If propagation was stopped, ensure that the original logic is also called.
+      if (stopPropagation)
+        event.stopImmediatePropagation();
+    },
+    /**
+     * Registers an event listener for the provided event name against the runInterceptors method.
+     * @private
+     *
+     * @param {String} eventName
+     */
+    __registerEventListener(eventName) {
+      this.addEventListener(eventName, this.runInterceptors.bind(this, eventName));
+    },
+    /**
+     * Adds the interceptor stored in event.detail to each event referenced in events, if a new event group is added
+     *  then __registerEventListener is called.
+     * @private
+     *
+     * @param {CustomEvent} event
+     */
+    __registerInterceptor(event) {
+      const events = event.detail.events;
+      if (!events || !events.length) return;
+
+      event.stopPropagation();
+
+      // Element registered, now add an unregister listener
+      event.detail.addEventListener('unregister-interceptor', this.__unregisterInterceptor.bind(this));
+
+      events.forEach((e) => {
+        if (!this.interceptors[e.name]) {
+          this.interceptors[e.name] = new Set();
+          this.__registerEventListener(e.name);
+        }
+        this.interceptors[e.name].add(event.detail);
+      });
+
+      this.notifyPath('interceptors', this.interceptors);
+    },
+    /**
+     * Removes the event listener for the provided event name against the runInterceptors method.
+     * @private
+     *
+     * @param {String} eventName
+     */
+    __unregisterEventListener(eventName) {
+      this.removeEventListener(eventName, this.runInterceptors);
+    },
+    /**
+     * Removes the interceptor from each event Set it's part of, if the set is emptied out then
+     *  __unregisterEventListener is called.
+     * @private
+     *
+     * @param {CustomEvent} event
+     */
+    __unregisterInterceptor(event) {
+      const events = event.detail.events;
+      if (!events || !events.length) return;
+
+      events.forEach((e) => {
+        if (this.interceptors[e.name]) {
+          this.interceptors[e.name].delete(event.detail);
+          if (!this.interceptors[e.name].size) {
+            delete this.interceptors[e.name];
+            this.__unregisterEventListener(e.name);
+          }
+        }
+      });
+
+      this.notifyPath('interceptors', this.interceptors);
+    }
+  };
 </script>

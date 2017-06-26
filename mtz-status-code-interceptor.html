@@ -15,10 +15,19 @@ to determine if the interceptor logic should run or not.
         /* The status code check against for this interceptor */
         status: Number,
         /* The events to trigger status code checks against */
-        eventNames: {
+        events: {
           type: Array,
           value() {
-            return ['response', 'upload-response'];
+            return [
+              {
+                name: 'response',
+                path: 'detail.status'
+              }, {
+                name: 'upload-response',
+                // TODO: is this right?
+                path: 'detail.status'
+              }
+            ];
           }
         }
       },
@@ -28,11 +37,16 @@ to determine if the interceptor logic should run or not.
        * @fires mtz.InterceptorBehavior#intercept
        *
        * @param {CustomEvent} event - the event that triggered the interceptor
+       * @param {String} eventName - the event name that triggered the intercept
        * @param {Number} [status = this.status] - the status code to check against
        */
-      intercept(event, status = this.status) {
-        // TODO: check this to make sure the code in the event is actually lined up
-        if (Number(status) === Number(event.code))
+      intercept(event, eventName, status = this.status) {
+        let statusCode;
+        const path = (this.events.find((item) => item.name === eventName) || {}).path;
+
+        if (path)
+          statusCode = this.get(path, event);
+        if (Number(status) === Number(statusCode))
           this._fireInterceptEvent(event);
       }
     });

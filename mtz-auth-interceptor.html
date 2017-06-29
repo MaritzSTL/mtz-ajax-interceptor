@@ -2,13 +2,14 @@
 <link rel="import" href="mtz-interceptor-behavior.html">
 
 <!--
-`mtz-presend-header-interceptor`
-An implementation of the mtz.InterceptorBehavior that injects a header:value onto a presend event for iron-ajax.
+`mtz-auth-interceptor`
+An implementation of the mtz.InterceptorBehavior that injects auth headers based on the event.target containing the
+  [with-auth] attribute.
 -->
-<dom-module id="mtz-presend-header-interceptor">
+<dom-module id="mtz-auth-interceptor">
   <script>
     Polymer({
-      is: 'mtz-presend-header-interceptor',
+      is: 'mtz-auth-interceptor',
       behaviors: [mtz.InterceptorBehavior],
       properties: {
         /* The events to intercept against */
@@ -24,18 +25,23 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
           }
         },
         /* The header name to attach to the ajax request */
-        key: String,
+        key: {
+          type: String,
+          value: 'Authorization'
+        },
         /* The value to associate with the provided header */
         value: String
       },
       /**
-       * Triggers the logic to set the header.
+       * Checks the event to see if event.target has with-auth set, if so then _applyHeader is called.
        *
        * @param {CustomEvent} event - the event that triggered the interceptor
        * @param {String} eventName - the name of the event that triggered this intercept
        */
       intercept(event, eventName) {
-        this._applyHeader(event, eventName);
+        console.log('test', event);
+        if (event.target.getAttribute('with-auth'))
+          this._applyHeader(event, eventName);
       },
       /**
        * Attaches a header to the ajax request.

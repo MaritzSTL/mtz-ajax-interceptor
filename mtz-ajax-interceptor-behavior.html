@@ -20,14 +20,20 @@
       }
     },
     attached() {
-      this.addEventListener('register-interceptor', this.__registerInterceptor.bind(this));
+      this.addEventListener('register-interceptor', this.__registerInterceptor);
     },
     detached() {
-      this.removeEventListener('register-interceptor', this.__registerInterceptor.bind(this));
+      this.removeEventListener('register-interceptor', this.__registerInterceptor);
       // Remove all active event listeners
       Object.keys(this.interceptors).forEach((key) => {
         this.__unregisterEventListener(key);
       });
+    },
+    ready() {
+      // Ensures that when these functions are used they always get the proper this reference.
+      this.runInterceptors = this.runInterceptors.bind(this);
+      this.__registerInterceptor = this.__registerInterceptor.bind(this);
+      this.__unregisterInterceptor = this.__unregisterInterceptor.bind(this);
     },
     /**
      * Runs all interceptors associated with the event, passing along the event to the interceptors chained together.
@@ -40,20 +46,20 @@
       if (!event || !interceptors) return;
 
       // Override stopImmediatePropagation so we can break out if needed.
-      const stopProp = event.stopImmediatePropagation;
+      const stopImmediatePropagationFnc = event.stopImmediatePropagation;
       let stopPropagation = false;
       event.stopImmediatePropagation = () => {
         stopPropagation = true;
       };
 
       for (const interceptor of Array.from(interceptors).sort((a, b) => b.priority - a.priority)) {
-        if (event.defaultPrevented || stopPropagation)
+        if (stopPropagation)
           break;
         interceptor.intercept(event, eventName);
       }
 
       // Restore stopImmediatePropagation incase it's needed.
-      event.stopImmediatePropagation = stopProp;
+      event.stopImmediatePropagation = stopImmediatePropagationFnc;
 
       // If propagation was stopped, ensure that the original logic is also called.
       if (stopPropagation)
@@ -66,7 +72,7 @@
      * @param {String} eventName
      */
     __registerEventListener(eventName) {
-      this.addEventListener(eventName, this.runInterceptors.bind(this, eventName));
+      this.addEventListener(eventName, this.runInterceptors);
     },
     /**
      * Adds the interceptor stored in event.detail to each event referenced in events, if a new event group is added
@@ -82,7 +88,7 @@
       event.stopPropagation();
 
       // Element registered, now add an unregister listener
-      event.detail.addEventListener('unregister-interceptor', this.__unregisterInterceptor.bind(this));
+      event.detail.addEventListener('unregister-interceptor', this.__unregisterInterceptor);
 
       events.forEach((e) => {
         if (!this.interceptors[e.name]) {

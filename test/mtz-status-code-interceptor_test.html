@@ -27,9 +27,11 @@
         });
 
         /* Public Methods */
-        describe('intercept(event, status = this.status)', () => {
+        describe('intercept(event, eventName, status = this.status)', () => {
           const event = {
-            code: 419
+            detail: {
+              status: 419
+            }
           };
 
           beforeEach(() => {
@@ -38,12 +40,12 @@
 
           it('should call _fireInterceptEvent if the status matches', () => {
             element.status = 419;
-            element.intercept(event);
+            element.intercept(event, 'response');
             expect(element._fireInterceptEvent.calledWithMatch(event)).to.equal(true);
           });
           it('should not call _fireInterceptEvent if the status does not match', () => {
             element.status = 204;
-            element.intercept(event);
+            element.intercept(event, 'response');
             expect(element._fireInterceptEvent.called).to.equal(false);
           });
         });

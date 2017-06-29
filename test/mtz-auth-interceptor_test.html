@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>mtz-auth-interceptor test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../mtz-auth-interceptor.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <mtz-auth-interceptor></mtz-auth-interceptor>
+      </template>
+    </test-fixture>
+
+    <script>
+      describe('mtz-auth-interceptor', () => {
+        let element;
+        const el = document.createElement('div'),
+          event = {
+            detail: {
+              options: {}
+            },
+            target: el
+          },
+          eventName = 'iron-ajax-presend';
+
+        beforeEach(() => {
+          event.detail.options.headers = {};
+          event.target = el;
+          element = fixture('basic');
+        });
+
+        /* Public Methods */
+        describe('intercept(event, eventName)', () => {
+          beforeEach(() => {
+            element._applyHeader = sinon.spy();
+          });
+          afterEach(() => {
+            el.removeAttribute('with-auth');
+          });
+
+          it('should not call _applyHeader when event.target does not have with-auth', () => {
+            element.intercept(event, eventName);
+            expect(element._applyHeader.called).to.equal(false);
+          });
+          it('should call _applyHeader when event.target has with-auth', () => {
+            el.setAttribute('with-auth', true);
+            element.intercept(event, eventName);
+            expect(element._applyHeader.calledWithMatch(event, eventName)).to.equal(true);
+          });
+        });
+        /* Protected Methods */
+        describe('_applyHeader(event, eventName)', () => {
+          it('should update path[key] with the value on event when a path is found', () => {
+            element.key = 'key';
+            element.value = 'value';
+            element._applyHeader(event, eventName);
+            expect(event.detail.options.headers[element.key]).to.equal(element.value);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -19,6 +19,7 @@
     </test-fixture>
 
     <script>
+      // TODO: add tests
       describe('mtz-ajax-interceptor', () => {
         let element;
 
@@ -26,8 +27,247 @@
           element = fixture('basic');
         });
 
-        it('should instantiate the element', () => {
-          expect(element.is).to.equal('mtz-ajax-interceptor');
+        /* Lifecycle Events */
+        describe('attached()', () => {
+          const event = new CustomEvent('register-interceptor');
+
+          beforeEach(() => {
+            element.detached();
+            element.__registerInterceptor = sinon.spy();
+            element.attached();
+          });
+
+          it('should add an event listener for register-interceptor', () => {
+            element.dispatchEvent(event);
+            expect(element.__registerInterceptor).calledWithMatch(event);
+          });
+        });
+        describe('detached()', () => {
+          beforeEach(() => {
+            element.detached();
+            element.__registerInterceptor = sinon.spy();
+            element.__unregisterEventListener = sinon.spy();
+            element.attached();
+          });
+
+          it('should add an event listener for register-interceptor', () => {
+            const event = new CustomEvent('register-interceptor');
+            element.detached();
+            element.dispatchEvent(event);
+            expect(element.__registerInterceptor.called).to.equal(false);
+          });
+          it('should call __unregisterEventListener for each key in interceptors', () => {
+            element.interceptors = {
+              foo: new Set(),
+              bar: new Set()
+            };
+            element.detached();
+            expect(element.__unregisterEventListener).calledWith('foo');
+            expect(element.__unregisterEventListener).calledWith('bar');
+          });
+        });
+        describe('ready()', () => {
+          it('should bind this to runInterceptors', () => {
+            const spy = sinon.spy(element.runInterceptors, 'bind');
+            element.ready();
+            expect(spy).calledWith(element);
+          });
+          it('should bind this to __registerInterceptor', () => {
+            const spy = sinon.spy(element.__registerInterceptor, 'bind');
+            element.ready();
+            expect(spy).calledWith(element);
+          });
+          it('should bind this to __unregisterInterceptor', () => {
+            const spy = sinon.spy(element.__unregisterInterceptor, 'bind');
+            element.ready();
+            expect(spy).calledWith(element);
+          });
+        });
+        /* Public Methods */
+        describe('runInterceptors(eventName, event)', () => {
+          beforeEach(() => {
+            element.__unregisterInterceptor = sinon.spy();
+          });
+
+          it('should do nothing when there is no event', () => {
+            element.interceptors = {
+              foo: new Set([{intercept: sinon.spy()}])
+            };
+            element.runInterceptors('foo');
+            expect(Array.from(element.interceptors.foo)[0].intercept.called).to.equal(false);
+          });
+          it('should call intercept(event, eventName) on all interceptors for eventName', () => {
+            const event = new CustomEvent('foo');
+            element.interceptors = {
+              foo: new Set([{intercept: sinon.spy()}, {intercept: sinon.spy()}]),
+              bar: new Set([{intercept: sinon.spy()}])
+            };
+            element.runInterceptors('foo', event);
+            expect(Array.from(element.interceptors.bar)[0].intercept.called).to.equal(false);
+            expect(Array.from(element.interceptors.foo)[0].intercept).calledWithMatch(event, 'foo');
+            expect(Array.from(element.interceptors.foo)[1].intercept).calledWithMatch(event, 'foo');
+          });
+          it('should sort interceptors based on priority', () => {
+            const event = new CustomEvent('foo');
+
+            element.interceptors = {
+              foo: new Set([
+                {
+                  intercept: sinon.spy(),
+                  priority: -1
+                },
+                {
+                  intercept: sinon.spy(),
+                  priority: 1
+                },
+                {
+                  intercept: sinon.spy(),
+                  priority: 0
+                }
+              ]),
+            };
+            element.runInterceptors('foo', event);
+            const interceptors = Array.from(element.interceptors.foo);
+            expect(interceptors[0].intercept).calledWithMatch(event, 'foo');
+            expect(interceptors[1].intercept).calledWithMatch(event, 'foo');
+            expect(interceptors[2].intercept).calledWithMatch(event, 'foo');
+            expect(interceptors[1].intercept).calledBefore(interceptors[2].intercept);
+            expect(interceptors[2].intercept).calledBefore(interceptors[0].intercept);
+          });
+          it('should break on interceptors and call propagate stopImmediatePropagation when called by an interceptor',
+            () => {
+              const event = new CustomEvent('foo');
+              event.stopImmediatePropagation = sinon.spy();
+
+              element.interceptors = {
+                foo: new Set([
+                  {
+                    intercept: sinon.spy(),
+                    priority: -1
+                  },
+                  {
+                    intercept: sinon.spy((event) => {
+                      event.stopImmediatePropagation();
+                    }),
+                    priority: 1
+                  },
+                  {
+                    intercept: sinon.spy(),
+                    priority: 0
+                  }
+                ]),
+              };
+              element.runInterceptors('foo', event);
+              const interceptors = Array.from(element.interceptors.foo);
+              expect(interceptors[0].intercept.called).to.equal(false);
+              expect(interceptors[1].intercept.called).to.equal(true);
+              expect(interceptors[2].intercept.called).to.equal(false);
+              expect(event.stopImmediatePropagation.called).to.equal(true);
+            });
+        });
+        /* Private Methods */
+        describe('__registerEventListener(eventName)', () => {
+          const event = new CustomEvent('event-name');
+
+          beforeEach(() => {
+            element.runInterceptors = sinon.spy();
+          });
+
+          it('should register runInterceptors for the named event', () => {
+            element.__registerEventListener('event-name');
+            element.dispatchEvent(event);
+            expect(element.runInterceptors.called).to.equal(true);
+          });
+        });
+        describe('__registerInterceptor(event)', () => {
+          const el = document.createElement('div'),
+            el2 = document.createElement('div');
+          const event = new CustomEvent('foo', {detail: el}),
+            event2 = new CustomEvent('foo', {detail: el2});
+
+          beforeEach(() => {
+            element.__registerEventListener = sinon.spy();
+            element.__unregisterInterceptor = sinon.spy();
+            el.events = [
+              {
+                name: 'foo'
+              },
+              {
+                name: 'bar'
+              }
+            ];
+            el2.events = [el.events[0]];
+            event.stopPropagation = sinon.spy();
+
+            element.__registerInterceptor(event);
+            element.__registerInterceptor(event2);
+          });
+
+          it('should stop event propagation', () => {
+            expect(event.stopPropagation.called).to.equal(true);
+          });
+          it('should add a listener for unregister-interceptor for the event.detail', () => {
+            el.dispatchEvent(new CustomEvent('unregister-interceptor'));
+            expect(element.__unregisterInterceptor.called).to.equal(true);
+          });
+          it('should call __registerEventListener for each event on the detail element', () => {
+            expect(element.__registerEventListener).calledWithMatch('foo');
+            expect(element.__registerEventListener).calledWithMatch('bar');
+          });
+          it('should add the detail element to the interceptors map for each event', () => {
+            expect(element.interceptors).to.deep.equal({
+              foo: new Set([el, el2]),
+              bar: new Set([el])
+            });
+            expect(element.interceptors.foo.size).to.equal(2);
+            expect(element.interceptors.bar.size).to.equal(1);
+          });
+        });
+        describe('__unregisterEventListener(eventName)', () => {
+          const event = new CustomEvent('event-name');
+
+          beforeEach(() => {
+            element.runInterceptors = sinon.spy();
+            element.__registerEventListener('event-name');
+          });
+
+          it('should register runInterceptors for the named event', () => {
+            element.__unregisterEventListener('event-name');
+            element.dispatchEvent(event);
+            expect(element.runInterceptors.called).to.equal(false);
+          });
+        });
+        describe('__unregisterInterceptor(event)', () => {
+          const el = document.createElement('div'),
+            el2 = document.createElement('div');
+          const event = new CustomEvent('foo', {detail: el}),
+            event2 = new CustomEvent('foo', {detail: el2});
+
+          beforeEach(() => {
+            element.__unregisterEventListener = sinon.spy();
+            el.events = [
+              {
+                name: 'foo'
+              },
+              {
+                name: 'bar'
+              }
+            ];
+            el2.events = [el.events[1]];
+
+            element.__registerInterceptor(event);
+            element.__registerInterceptor(event2);
+            element.__unregisterInterceptor(event);
+          });
+
+          it('should delete the name from the map and call __unregisterEventListener when the list item is removed',
+            () => {
+              expect(element.interceptors).to.deep.equal({
+                bar: new Set([el2])
+              });
+              expect(element.__unregisterEventListener).calledWith('foo');
+              expect(element.__unregisterEventListener).not.calledWith('bar');
+            });
         });
       });
     </script>

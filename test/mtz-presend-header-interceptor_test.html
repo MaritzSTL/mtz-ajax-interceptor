@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>mtz-presend-header-interceptor test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../mtz-presend-header-interceptor.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <mtz-presend-header-interceptor></mtz-presend-header-interceptor>
+      </template>
+    </test-fixture>
+
+    <script>
+      describe('mtz-presend-header-interceptor', () => {
+        let element;
+        const event = {
+            detail: {
+              options: {}
+            }
+          }, eventName = 'iron-ajax-presend';
+
+        beforeEach(() => {
+          event.detail.options.headers = {};
+          element = fixture('basic');
+        });
+
+        /* Public Methods */
+        describe('intercept(event, eventName)', () => {
+          it('should call _applyHeader', () => {
+            element._applyHeader = sinon.spy();
+            element.intercept(event, eventName);
+            expect(element._applyHeader.calledWithMatch(event, eventName)).to.equal(true);
+          });
+        });
+        /* Protected Methods */
+        describe('_applyHeader(event, eventName)', () => {
+          it('should update path[key] with the value on event when a path is found', () => {
+            element.key = 'key';
+            element.value = 'value';
+            element._applyHeader(event, eventName);
+            expect(event.detail.options.headers[element.key]).to.equal(element.value);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

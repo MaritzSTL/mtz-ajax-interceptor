@@ -39,7 +39,6 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
        * @param {String} eventName - the name of the event that triggered this intercept
        */
       intercept(event, eventName) {
-        console.log('test', event);
         if (event.target.getAttribute('with-auth'))
           this._applyHeader(event, eventName);
       },

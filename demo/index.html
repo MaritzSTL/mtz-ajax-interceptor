@@ -10,10 +10,10 @@
 
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="mtz-ajax-interceptor.html">
+    <link rel="import" href="../../iron-ajax/iron-ajax.html">
     <link rel="import" href="../mtz-status-code-interceptor.html">
     <link rel="import" href="../mtz-presend-header-interceptor.html">
-    <link rel="import" href="../../iron-ajax/iron-ajax.html">
+    <link rel="import" href="mtz-ajax-interceptor.html">
 
     <style is="custom-style" include="demo-pages-shared-styles">
     </style>
@@ -52,7 +52,7 @@
                 <input type="checkbox" checked="{{headerInterceptor::change}}">
               </label>
               <br>
-              <button on-tap="intercept">Trigger Interceptors</button>
+              <button on-click="intercept">Trigger Interceptors</button>
             </template>
             <script>
               Polymer({
@@ -67,14 +67,12 @@
                     value: ''
                   }
                 },
-                listeners: {
-                  intercept: '_log'
-                },
                 intercept() {
                   this.$.ajax.generateRequest();
                 },
-                statusCodeInterceptor() {
+                statusCodeInterceptor(event) {
                   this.statusCodeIntercepted = this.statusCodeIntercepted.concat('intercepted! ');
+                  console.log('intercepted', event);
                 }
               });
             </script>

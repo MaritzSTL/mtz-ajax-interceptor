@@ -11,7 +11,7 @@
    */
   mtz.AjaxInterceptorBehavior = {
     properties: {
-      /* The map of event to interceptor Set to listen against */
+      /* The map of event names to {Set} of interceptors for that event */
       interceptors: {
         type: Object,
         value() {
@@ -78,24 +78,25 @@
      * Adds the interceptor stored in event.detail to each event referenced in events, if a new event group is added
      *  then __registerEventListener is called.
      * @private
+     * @listens mtz.InterceptorBehavior#register-interceptor
      *
      * @param {CustomEvent} event
      */
     __registerInterceptor(event) {
+      event.stopPropagation();
+
       const events = event.detail.events;
       if (!events || !events.length) return;
-
-      event.stopPropagation();
 
       // Element registered, now add an unregister listener
       event.detail.addEventListener('unregister-interceptor', this.__unregisterInterceptor);
 
-      events.forEach((e) => {
-        if (!this.interceptors[e.name]) {
-          this.interceptors[e.name] = new Set();
-          this.__registerEventListener(e.name);
+      events.forEach(({name}) => {
+        if (!this.interceptors[name]) {
+          this.interceptors[name] = new Set();
+          this.__registerEventListener(name);
         }
-        this.interceptors[e.name].add(event.detail);
+        this.interceptors[name].add(event.detail);
       });
 
       this.notifyPath('interceptors', this.interceptors);
@@ -113,6 +114,7 @@
      * Removes the interceptor from each event Set it's part of, if the set is emptied out then
      *  __unregisterEventListener is called.
      * @private
+     * @listens mtz.InterceptorBehavior#unregister-interceptor
      *
      * @param {CustomEvent} event
      */
@@ -120,12 +122,12 @@
       const events = event.detail.events;
       if (!events || !events.length) return;
 
-      events.forEach((e) => {
-        if (this.interceptors[e.name]) {
-          this.interceptors[e.name].delete(event.detail);
-          if (!this.interceptors[e.name].size) {
-            delete this.interceptors[e.name];
-            this.__unregisterEventListener(e.name);
+      events.forEach(({name}) => {
+        if (this.interceptors[name]) {
+          this.interceptors[name].delete(event.detail);
+          if (!this.interceptors[name].size) {
+            delete this.interceptors[name];
+            this.__unregisterEventListener(name);
           }
         }
       });

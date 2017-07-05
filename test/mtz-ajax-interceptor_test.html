@@ -31,10 +31,11 @@
         describe('attached()', () => {
           const event = new CustomEvent('register-interceptor');
 
-          beforeEach(() => {
+          beforeEach((done) => {
             parent.removeChild(element);
             element.__registerInterceptor = sinon.spy();
             parent.appendChild(element);
+            flush(done);
           });
 
           it('should add an event listener for register-interceptor', () => {
@@ -43,27 +44,34 @@
           });
         });
         describe('detached()', () => {
-          beforeEach(() => {
+          beforeEach((done) => {
             parent.removeChild(element);
             element.__registerInterceptor = sinon.spy();
             element.__unregisterEventListener = sinon.spy();
             parent.appendChild(element);
+            flush(done);
           });
 
-          it('should add an event listener for register-interceptor', () => {
+          it('should add an event listener for register-interceptor', (done) => {
             const event = new CustomEvent('register-interceptor');
             parent.removeChild(element);
-            element.dispatchEvent(event);
-            expect(element.__registerInterceptor.called).to.equal(false);
+            flush(() => {
+              element.dispatchEvent(event);
+              expect(element.__registerInterceptor.called).to.equal(false);
+              done();
+            });
           });
-          it('should call __unregisterEventListener for each key in interceptors', () => {
+          it('should call __unregisterEventListener for each key in interceptors', (done) => {
             element.interceptors = {
               foo: new Set(),
               bar: new Set()
             };
             parent.removeChild(element);
-            expect(element.__unregisterEventListener).calledWith('foo');
-            expect(element.__unregisterEventListener).calledWith('bar');
+            flush(() => {
+              expect(element.__unregisterEventListener).calledWith('foo');
+              expect(element.__unregisterEventListener).calledWith('bar');
+              done();
+            });
           });
         });
         describe('ready()', () => {

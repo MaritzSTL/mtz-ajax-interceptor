@@ -86,7 +86,7 @@
     __registerInterceptor(event) {
       event.stopPropagation();
 
-      const events = event.detail.events;
+      const events = event.detail ? event.detail.events : [];
       if (!events || !events.length) return;
 
       // Element registered, now add an unregister listener

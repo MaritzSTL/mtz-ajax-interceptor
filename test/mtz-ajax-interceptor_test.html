@@ -20,10 +20,11 @@
 
     <script>
       describe('mtz-ajax-interceptor', () => {
-        let element;
+        let element, parent;
 
         beforeEach(() => {
           element = fixture('basic');
+          parent = element.parentNode;
         });
 
         /* Lifecycle Events */
@@ -31,9 +32,9 @@
           const event = new CustomEvent('register-interceptor');
 
           beforeEach(() => {
-            element.detached();
+            parent.removeChild(element);
             element.__registerInterceptor = sinon.spy();
-            element.attached();
+            parent.appendChild(element);
           });
 
           it('should add an event listener for register-interceptor', () => {
@@ -43,15 +44,15 @@
         });
         describe('detached()', () => {
           beforeEach(() => {
-            element.detached();
+            parent.removeChild(element);
             element.__registerInterceptor = sinon.spy();
             element.__unregisterEventListener = sinon.spy();
-            element.attached();
+            parent.appendChild(element);
           });
 
           it('should add an event listener for register-interceptor', () => {
             const event = new CustomEvent('register-interceptor');
-            element.detached();
+            parent.removeChild(element);
             element.dispatchEvent(event);
             expect(element.__registerInterceptor.called).to.equal(false);
           });
@@ -60,7 +61,7 @@
               foo: new Set(),
               bar: new Set()
             };
-            element.detached();
+            parent.removeChild(element);
             expect(element.__unregisterEventListener).calledWith('foo');
             expect(element.__unregisterEventListener).calledWith('bar');
           });
@@ -68,17 +69,17 @@
         describe('ready()', () => {
           it('should bind this to runInterceptors', () => {
             const spy = sinon.spy(element.runInterceptors, 'bind');
-            element.ready();
+            element[`${Polymer.Element ? '' : '_'}ready`]();
             expect(spy).calledWith(element);
           });
           it('should bind this to __registerInterceptor', () => {
             const spy = sinon.spy(element.__registerInterceptor, 'bind');
-            element.ready();
+            element[`${Polymer.Element ? '' : '_'}ready`]();
             expect(spy).calledWith(element);
           });
           it('should bind this to __unregisterInterceptor', () => {
             const spy = sinon.spy(element.__unregisterInterceptor, 'bind');
-            element.ready();
+            element[`${Polymer.Element ? '' : '_'}ready`]();
             expect(spy).calledWith(element);
           });
         });

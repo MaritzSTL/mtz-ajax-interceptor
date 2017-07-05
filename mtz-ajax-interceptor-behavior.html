@@ -52,7 +52,8 @@
         stopPropagation = true;
       };
 
-      for (const interceptor of Array.from(interceptors).sort((a, b) => b.priority - a.priority)) {
+      const ints = Array.from(interceptors).sort((a, b) => (Number(b.priority) || 0) - (Number(a.priority) || 0));
+      for (const interceptor of ints) {
         if (stopPropagation)
           break;
         interceptor.intercept(event, eventName);

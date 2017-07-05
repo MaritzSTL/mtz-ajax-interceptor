@@ -114,7 +114,11 @@
               foo: new Set([
                 {
                   intercept: sinon.spy(),
-                  priority: -1
+                  priority: -1.5
+                },
+                {
+                  intercept: sinon.spy(),
+                  priority: 'a'
                 },
                 {
                   intercept: sinon.spy(),
@@ -131,8 +135,10 @@
             expect(interceptors[0].intercept).calledWithMatch(event, 'foo');
             expect(interceptors[1].intercept).calledWithMatch(event, 'foo');
             expect(interceptors[2].intercept).calledWithMatch(event, 'foo');
-            expect(interceptors[1].intercept).calledBefore(interceptors[2].intercept);
-            expect(interceptors[2].intercept).calledBefore(interceptors[0].intercept);
+            expect(interceptors[3].intercept).calledWithMatch(event, 'foo');
+            expect(interceptors[2].intercept).calledBefore(interceptors[1].intercept);
+            expect(interceptors[1].intercept).calledBefore(interceptors[3].intercept);
+            expect(interceptors[3].intercept).calledBefore(interceptors[0].intercept);
           });
           it('should break on interceptors and call propagate stopImmediatePropagation when called by an interceptor',
             () => {

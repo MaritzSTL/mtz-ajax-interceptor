@@ -24,8 +24,7 @@ to determine if the interceptor logic should run or not.
                 path: 'detail.status'
               }, {
                 name: 'upload-response',
-                // TODO: is this right?
-                path: 'detail.status'
+                path: 'detail.xhr.status'
               }
             ];
           }
@@ -44,10 +43,11 @@ to determine if the interceptor logic should run or not.
         let statusCode;
         const path = (this.events.find((item) => item.name === eventName) || {}).path;
 
-        if (path)
+        if (path) {
           statusCode = this.get(path, event);
-        if (Number(status) === Number(statusCode))
-          this._fireInterceptEvent(event);
+          if (Number(status) === Number(statusCode))
+            this._fireInterceptEvent(event);
+        }
       }
     });
   </script>

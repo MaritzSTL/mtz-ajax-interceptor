@@ -28,23 +28,21 @@
      * @fires mtz.InterceptorBehavior#register-interceptor
      */
     attached() {
-      const event = new CustomEvent('register-interceptor', {
+      this.dispatchEvent(new CustomEvent('register-interceptor', {
         detail: this,
         bubbles: true,
         composed: true
-      });
-      this.dispatchEvent(event);
+      }));
     },
     /**
      * Unregister this element from intercepting events.
      * @fires mtz.InterceptorBehavior#unregister-interceptor
      */
     detached() {
-      const event = new CustomEvent('unregister-interceptor', {
+      this.dispatchEvent(new CustomEvent('unregister-interceptor', {
         detail: this,
         composed: true
-      });
-      this.dispatchEvent(event);
+      }));
     },
     /**
      * Called when one of the events in eventsNames was captured, the captured event is then passed to this function.
@@ -63,11 +61,10 @@
      * @param {CustomEvent} event - the captured event that triggered this interceptor.
      */
     _fireInterceptEvent(event) {
-      const e = new CustomEvent('intercept', {
+      this.dispatchEvent(new CustomEvent('intercept', {
         detail: event,
         composed: true
-      });
-      this.dispatchEvent(e);
+      }));
     }
   };
 

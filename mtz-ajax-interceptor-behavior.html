@@ -8,6 +8,7 @@
    *  and calling the interceptors associated with those events.
    *
    * @polymerBehavior mtz.AjaxInterceptorBehavior
+   * @demo demo/index.html
    */
   mtz.AjaxInterceptorBehavior = {
     properties: {
@@ -38,8 +39,8 @@
     /**
      * Runs all interceptors associated with the event, passing along the event to the interceptors chained together.
      *
-     * @param {String} eventName - the event name that triggered the interceptor
-     * @param {Event} event - the event that triggered the interceptor logic
+     * @param {String} eventName
+     * @param {Event} event
      */
     runInterceptors(eventName, event) {
       const interceptors = this.interceptors[eventName];

@@ -4,6 +4,8 @@
 <!--
 `mtz-presend-header-interceptor`
 An implementation of the mtz.InterceptorBehavior that injects a header:value onto a presend event for iron-ajax.
+
+@demo demo/index.html
 -->
 <dom-module id="mtz-presend-header-interceptor">
   <script>
@@ -31,8 +33,8 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
       /**
        * Triggers the logic to set the header.
        *
-       * @param {CustomEvent} event - the event that triggered the interceptor
-       * @param {String} eventName - the name of the event that triggered this intercept
+       * @param {CustomEvent} event
+       * @param {String} eventName
        */
       intercept(event, eventName) {
         this._applyHeader(event, eventName);
@@ -41,8 +43,8 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
        * Attaches a header to the ajax request.
        * @protected
        *
-       * @param {CustomEvent} event - the event containing the ajax request
-       * @param {String} eventName - the name of the event
+       * @param {CustomEvent} event
+       * @param {String} eventName
        */
       _applyHeader(event, eventName) {
         const path = (this.events.find((item) => item.name === eventName) || {}).path;

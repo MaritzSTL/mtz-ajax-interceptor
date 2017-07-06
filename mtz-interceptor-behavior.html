@@ -9,6 +9,7 @@
    *  bubbling event that is not a child of the element.
    *
    * @polymerBehavior mtz.InterceptorBehavior
+   * @demo demo/index.html
    */
   mtz.InterceptorBehavior = {
     properties: {
@@ -47,8 +48,8 @@
     /**
      * Called when one of the events in eventsNames was captured, the captured event is then passed to this function.
      *
-     * @param {CustomEvent} event - the captured event that triggered this interceptor
-     * @param {String} eventName - the event name that triggered the intercept
+     * @param {CustomEvent} event
+     * @param {String} eventName
      */
     intercept(event, eventName) {
       this._fireInterceptEvent(event, eventName);
@@ -58,7 +59,7 @@
      * @protected
      * @fires mtz.InterceptorBehavior#intercept
      *
-     * @param {CustomEvent} event - the captured event that triggered this interceptor.
+     * @param {CustomEvent} event
      */
     _fireInterceptEvent(event) {
       this.dispatchEvent(new CustomEvent('intercept', {

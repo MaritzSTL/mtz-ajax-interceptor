@@ -5,6 +5,8 @@
 `mtz-status-code-interceptor`
 An implementation of the mtz.InterceptorBehavior that compares a status property against the status code in the event
 to determine if the interceptor logic should run or not.
+
+@demo demo/index.html
 -->
 <dom-module id="mtz-status-code-interceptor">
   <script>
@@ -35,8 +37,8 @@ to determine if the interceptor logic should run or not.
        *  the intercept event gets fired.
        * @fires mtz.InterceptorBehavior#intercept
        *
-       * @param {CustomEvent} event - the event that triggered the interceptor
-       * @param {String} eventName - the event name that triggered the intercept
+       * @param {CustomEvent} event
+       * @param {String} eventName
        * @param {Number} [status = this.status] - the status code to check against
        */
       intercept(event, eventName, status = this.status) {

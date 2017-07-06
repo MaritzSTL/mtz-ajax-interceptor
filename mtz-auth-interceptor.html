@@ -5,6 +5,8 @@
 `mtz-auth-interceptor`
 An implementation of the mtz.InterceptorBehavior that injects auth headers based on the event.target containing the
   [with-auth] attribute.
+
+@demo demo/index.html
 -->
 <dom-module id="mtz-auth-interceptor">
   <script>
@@ -35,8 +37,8 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
       /**
        * Checks the event to see if event.target has with-auth set, if so then _applyHeader is called.
        *
-       * @param {CustomEvent} event - the event that triggered the interceptor
-       * @param {String} eventName - the name of the event that triggered this intercept
+       * @param {CustomEvent} event
+       * @param {String} eventName
        */
       intercept(event, eventName) {
         if (event.target.getAttribute('with-auth'))
@@ -46,8 +48,8 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
        * Attaches a header to the ajax request.
        * @protected
        *
-       * @param {CustomEvent} event - the event containing the ajax request
-       * @param {String} eventName - the name of the event
+       * @param {CustomEvent} event
+       * @param {String} eventName
        */
       _applyHeader(event, eventName) {
         const path = (this.events.find((item) => item.name === eventName) || {}).path;

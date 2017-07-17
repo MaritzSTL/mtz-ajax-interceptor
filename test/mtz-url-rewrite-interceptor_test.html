@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>mtz-url-rewrite-interceptor test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../mtz-url-rewrite-interceptor.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <mtz-url-rewrite-interceptor></mtz-url-rewrite-interceptor>
+      </template>
+    </test-fixture>
+
+    <script>
+      describe('mtz-url-rewrite-interceptor', () => {
+        let element;
+        let event;
+        let eventName;
+
+        beforeEach(() => {
+          event = {
+            detail: {
+              options: {},
+            },
+          };
+          eventName = 'iron-ajax-presend';
+          element = fixture('basic');
+        });
+
+        describe('__computeIsLocal(_localPattern, host)', () => {
+          it('should set __isLocal to true when localhost', () => {
+            expect(element.__computeIsLocal(element._localPattern, 'localhost:8081')).to.be.ok;
+            expect(element.__computeIsLocal(element._localPattern, 'localhost:3000')).to.be.ok;
+            expect(element.__computeIsLocal(element._localPattern, 'localhost')).to.be.ok;
+          });
+          it('should set __isLocal to true when 127.0.0.1', () => {
+            expect(element.__computeIsLocal(element._localPattern, '127.0.0.1:8081')).to.be.ok;
+            expect(element.__computeIsLocal(element._localPattern, '127.0.0.1:3000')).to.be.ok;
+            expect(element.__computeIsLocal(element._localPattern, '127.0.0.1')).to.be.ok;
+          });
+          it('should set __isLocal to false when not a localhost variation', () => {
+            expect(element.__computeIsLocal(element._localPattern, 'domain.com')).not.to.be.ok;
+            expect(element.__computeIsLocal(element._localPattern, 'domain.com:9000')).not.to.be.ok;
+          });
+          it('should set __isLocal to true when matching a custom pattern', () => {
+            expect(element.__computeIsLocal('domain\\.com', 'domain.com')).to.be.ok;
+          });
+        });
+        describe('intercept(event, eventName)', () => {
+          it('should call _rewriteUrl when the event matches and the url matches the rewriteMatcher', () => {
+            event.detail.options.url = '/api/rest/resource';
+            element._rewriteUrl = sinon.spy();
+            element.intercept(event, eventName);
+            expect(element._rewriteUrl).be.calledWithMatch(event.detail.options.url);
+          });
+          it('should not call _rewriteUrl when the event does not match', () => {
+            eventName = 'random-event';
+            element._rewriteUrl = sinon.spy();
+            element.intercept(event, eventName);
+            expect(element._rewriteUrl).not.be.called;
+          });
+          it('should not call _rewriteUrl when the event does not have a valid path', () => {
+            event.detail.options.bad = '/api/rest/resource';
+            element._rewriteUrl = sinon.spy();
+            element.intercept(event, eventName);
+            expect(element._rewriteUrl).not.be.called;
+          });
+          it('should not call _rewriteUrl when the url does not match the rewriteMatcher', () => {
+            event.detail.options.url = 'https://domain.com/rest/resource';
+            element._rewriteUrl = sinon.spy();
+            element.intercept(event, eventName);
+            expect(element._rewriteUrl).not.be.called;
+          });
+        });
+        describe('_rewriteUrl(url, [pattern], [replacement], [host], [isLocal])', () => {
+          it('should use the local base url when isLocal', () => {
+            element.baseUrl = 'BASE_URL';
+            element.localBaseUrl = 'LOCAL_BASE_URL';
+            expect(element._rewriteUrl('/api/rest/resource', undefined, undefined, undefined, true))
+              .to.equal(`${element.localBaseUrl}/api/rest/resource`);
+          });
+          it('should use the base url when not isLocal and base url is set', () => {
+            element.baseUrl = 'BASE_URL';
+            element.localBaseUrl = 'LOCAL_BASE_URL';
+            expect(element._rewriteUrl('/api/rest/resource', undefined, undefined, undefined, false))
+              .to.equal(`${element.baseUrl}/api/rest/resource`);
+          });
+          it('should rewrite the host if not local and no base url', () => {
+            element.localBaseUrl = 'LOCAL_BASE_URL';
+            expect(element._rewriteUrl('/api/rest/resource', '^(.+?)\\.', '$1-api.', 'subdomain.domain.com', false))
+              .to.equal(`subdomain-api.domain.com/api/rest/resource`);
+          });
+          it('should not modify the url if no queryString is generated', () => {
+            element.localBaseUrl = 'LOCAL_BASE_URL';
+            expect(element._rewriteUrl('/api/rest/resource', undefined, undefined, undefined, true))
+              .to.equal(`LOCAL_BASE_URL/api/rest/resource`);
+          });
+          it('should modify the url if queryString is generated', () => {
+            element.localBaseUrl = 'LOCAL_BASE_URL';
+            element.__getQueryString = sinon.stub().returns('key=value&key2=value2');
+            expect(element._rewriteUrl('/api/rest/resource', undefined, undefined, undefined, true))
+              .to.equal(`LOCAL_BASE_URL/api/rest/resource?key=value&key2=value2`);
+          });
+          it('should modify the url if queryString is generated', () => {
+            element.localBaseUrl = 'LOCAL_BASE_URL';
+            element.__getQueryString = sinon.stub().returns('key=value&key2=value2');
+            expect(element._rewriteUrl('/api/rest/resource?oKey=oValue', undefined, undefined, undefined, true))
+              .to.equal(`LOCAL_BASE_URL/api/rest/resource?oKey=oValue&key=value&key2=value2`);
+          });
+        });
+        describe('__getQueryString([params])', () => {
+          it('should return a properly serialized string', () => {
+            const queryString = element.__getQueryString({
+              user(isLocal) {
+                return isLocal ? 'admin' : undefined;
+              },
+              test: 'foo bar',
+              delete: null,
+              arr: ['a b', 'c'],
+            });
+            expect(queryString).to.equal(`user=admin&test=foo%20bar&delete&arr=a%20b&arr=c`);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

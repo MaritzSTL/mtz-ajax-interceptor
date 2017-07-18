@@ -58,7 +58,7 @@
             event.detail.options.url = '/api/rest/resource';
             element._rewriteUrl = sinon.spy();
             element.intercept(event, eventName);
-            expect(element._rewriteUrl).be.calledWithMatch(event.detail.options.url);
+            expect(element._rewriteUrl).be.calledWithMatch('/api/rest/resource');
           });
           it('should not call _rewriteUrl when the event does not match', () => {
             eventName = 'random-event';

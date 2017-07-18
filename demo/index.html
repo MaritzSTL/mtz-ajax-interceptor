@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>mtz-ajax-interceptor demo</title>
+    <title>Interceptor demos</title>
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
@@ -13,10 +13,13 @@
     <link rel="import" href="../../iron-ajax/iron-ajax.html">
     <link rel="import" href="../mtz-status-code-interceptor.html">
     <link rel="import" href="../mtz-presend-header-interceptor.html">
+    <link rel="import" href="../mtz-url-rewrite-interceptor.html">
     <link rel="import" href="mtz-ajax-interceptor.html">
 
-    <style is="custom-style" include="demo-pages-shared-styles">
-    </style>
+    <custom-style>
+      <style is="custom-style" include="demo-pages-shared-styles">
+      </style>
+    </custom-style>
   </head>
   <body>
     <div class="vertical-section-container centered">
@@ -40,9 +43,13 @@
                     key="header"
                     value="test"
                   ></mtz-presend-header-interceptor>
+                  <mtz-url-rewrite-interceptor
+                    local-base-url="https://httpbin.org"
+                    query-params="[[queryParams]]"
+                  ></mtz-url-rewrite-interceptor>
                 </template>
 
-                <iron-ajax url="/fake" id="ajax" bubbles></iron-ajax>
+                <iron-ajax url="/get" id="ajax" bubbles></iron-ajax>
               </mtz-ajax-interceptor>
               <p>
                 [[statusCodeIntercepted]]
@@ -65,6 +72,19 @@
                   statusCodeIntercepted: {
                     type: String,
                     value: ''
+                  },
+                  queryParams: {
+                    type: Object,
+                    value() {
+                      return {
+                        user(isLocal, location) {
+                          return isLocal ? 'admin' :
+                            location.host.startsWith('d-') ? 'dev' :
+                            undefined;
+                        },
+                        foo: 'bar'
+                      };
+                    },
                   }
                 },
                 intercept() {

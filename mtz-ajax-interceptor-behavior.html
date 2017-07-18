@@ -39,10 +39,10 @@
     /**
      * Runs all interceptors associated with the event, passing along the event to the interceptors chained together.
      *
-     * @param {String} eventName
      * @param {Event} event
+     * @param {String} [eventName=event.type]
      */
-    runInterceptors(eventName, event) {
+    runInterceptors(event = {}, eventName = event.type) {
       const interceptors = this.interceptors[eventName];
       if (!event || !interceptors) return;
 

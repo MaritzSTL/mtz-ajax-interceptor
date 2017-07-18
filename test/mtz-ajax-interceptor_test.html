@@ -92,7 +92,7 @@
           });
         });
         /* Public Methods */
-        describe('runInterceptors(eventName, event)', () => {
+        describe('runInterceptors(event)', () => {
           beforeEach(() => {
             element.__unregisterInterceptor = sinon.spy();
           });
@@ -101,7 +101,7 @@
             element.interceptors = {
               foo: new Set([{intercept: sinon.spy()}])
             };
-            element.runInterceptors('foo');
+            element.runInterceptors();
             expect(Array.from(element.interceptors.foo)[0].intercept.called).to.equal(false);
           });
           it('should call intercept(event, eventName) on all interceptors for eventName', () => {
@@ -110,7 +110,7 @@
               foo: new Set([{intercept: sinon.spy()}, {intercept: sinon.spy()}]),
               bar: new Set([{intercept: sinon.spy()}])
             };
-            element.runInterceptors('foo', event);
+            element.runInterceptors(event);
             expect(Array.from(element.interceptors.bar)[0].intercept.called).to.equal(false);
             expect(Array.from(element.interceptors.foo)[0].intercept).calledWithMatch(event, 'foo');
             expect(Array.from(element.interceptors.foo)[1].intercept).calledWithMatch(event, 'foo');
@@ -138,7 +138,7 @@
                 }
               ]),
             };
-            element.runInterceptors('foo', event);
+            element.runInterceptors(event);
             const interceptors = Array.from(element.interceptors.foo);
             expect(interceptors[0].intercept).calledWithMatch(event, 'foo');
             expect(interceptors[1].intercept).calledWithMatch(event, 'foo');
@@ -171,7 +171,7 @@
                   }
                 ]),
               };
-              element.runInterceptors('foo', event);
+              element.runInterceptors(event);
               const interceptors = Array.from(element.interceptors.foo);
               expect(interceptors[0].intercept.called).to.equal(false);
               expect(interceptors[1].intercept.called).to.equal(true);
@@ -190,7 +190,7 @@
           it('should register runInterceptors for the named event', () => {
             element.__registerEventListener('event-name');
             element.dispatchEvent(event);
-            expect(element.runInterceptors.called).to.equal(true);
+            expect(element.runInterceptors).to.be.calledWith(event);
           });
         });
         describe('__registerInterceptor(event)', () => {
@@ -245,7 +245,7 @@
             element.__registerEventListener('event-name');
           });
 
-          it('should register runInterceptors for the named event', () => {
+          it('should deregister runInterceptors for the named event', () => {
             element.__unregisterEventListener('event-name');
             element.dispatchEvent(event);
             expect(element.runInterceptors.called).to.equal(false);

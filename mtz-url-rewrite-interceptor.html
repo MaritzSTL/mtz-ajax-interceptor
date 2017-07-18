@@ -3,7 +3,8 @@
 
 <!--
 `mtz-url-rewrite-interceptor`
-An implementation of the mtz.InterceptorBehavior that injects a header:value onto a presend event for iron-ajax.
+An implementation of the mtz.InterceptorBehavior that rewrites matching requests request url to a new url onto a
+presend event for iron-ajax.
 
 @demo demo/index.html
 -->
@@ -25,27 +26,43 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
             ];
           },
         },
-        /*  */
+        /* Rewrite requests that start with this value. This value is converted to `RegExp` */
         rewriteMatcher: {
           type: String,
           value: '/',
         },
-        /* TODO: */
-        baseUrl: String, // https://d-servicecenter-api.com/
-        /* TODO: */
-        localBaseUrl: String, // https://d-servicecenter-api.com/
-        /* TODO: */
+        /* Sets the base URL when on a non-local host. If not set, it fallsback to location.host with `String.replace` */
+        baseUrl: String,
+        /* Sets the base URL when on a localhost */
+        localBaseUrl: String,
+        /**
+         * Allows conditionally applied query params to the request. A function may be passed as a value to determine
+         * the value. Resulting values of `undefined` are removed from the object.
+         *
+         * ```js
+          {
+            // Conditionally applied based on `isLocal` and `location`
+            user: function(isLocal, location) {
+              return isLocal ? 'admin' :
+                location.host.startsWith('d-') ? 'dev' :
+                undefined;
+            },
+            // Always apply a query param
+            foo: 'bar'
+          }
+         * ```
+         */
         queryParams: Object,
-        /* TODO: */
+        /* Used in `String.replace` as the pattern to match. This value is converted to `RegExp` */
         pattern: String,
-        /* TODO: */
-        replacement: String,
-        /* TODO: */
+        /* Used in `String.replace` as the replacement `String` or `Function` */
+        replacement: Object,
+        /* Pattern used to match the host for determining if running on a localhost */
         _localPattern: {
           type: String,
           value: 'localhost|127\\.0\\.0\\.1',
         },
-        /* TODO: */
+        /* Stores the isLocal flag. Calculated from the local pattern and location.host */
         __isLocal: {
           type: Boolean,
           readOnly: true,
@@ -61,16 +78,6 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
         },
       },
       /**
-       * Sets the isLocal property based on if the host matches the localPattern
-       *
-       * @param {String|RegExp} localPattern
-       * @param {String} [host=window.location.host]
-       * @return {Boolean}
-       */
-      __computeIsLocal(localPattern, host = location.host) {
-        return new RegExp(localPattern).test(host);
-      },
-      /**
        * Triggers the logic to rewrite the request url.
        *
        * @param {CustomEvent} event
@@ -80,7 +87,7 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
         const path = (this.events.find((item) => item.name === eventName) || {}).path;
         const reqUrl = path && this.get(path, event);
         if (reqUrl && reqUrl.startsWith(this.rewriteMatcher)) {
-          this.set(reqUrl, this._rewriteUrl(reqUrl), event);
+          this.set(path, this._rewriteUrl(reqUrl), event);
         }
       },
       /**
@@ -90,9 +97,12 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
        * @param {String} url
        * @param {String|RegExp} [pattern=this.pattern]
        * @param {String|Function} [replacement=this.replacement]
+       * @param {String} [host=this.__host]
+       * @param {Boolean} [isLocal=this.__isLocal]
        * @return {String}
        */
-      _rewriteUrl(url, pattern = this.pattern, replacement = this.replacement, host = this.__host, isLocal = this.__isLocal) {
+      _rewriteUrl(url, pattern = this.pattern, replacement = this.replacement, host = this.__host,
+        isLocal = this.__isLocal) {
         // Determine baseUrl
         const baseUrl = isLocal ?
           this.localBaseUrl :
@@ -114,6 +124,7 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
       },
       /**
        * Generates the query string from the query params object
+       * @private
        *
        * @param {Object} [params=this.queryParams]
        * @return {String}
@@ -137,6 +148,17 @@ An implementation of the mtz.InterceptorBehavior that injects a header:value ont
           }
         });
         return queryParts.join('&');
+      },
+      /**
+       * Sets the isLocal property based on if the host matches the localPattern
+       * @private
+       *
+       * @param {String|RegExp} localPattern
+       * @param {String} [host=window.location.host]
+       * @return {Boolean}
+       */
+      __computeIsLocal(localPattern, host = location.host) {
+        return new RegExp(localPattern).test(host);
       },
     });
   </script>

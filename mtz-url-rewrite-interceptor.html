@@ -95,18 +95,24 @@ presend event for iron-ajax.
        * @protected
        *
        * @param {String} url
+       * @param {String} [rewriteMatcher=this.rewriteMatcher]
+       * @param {Boolean} [isLocal=this.__isLocal]
+       * @param {String} [localBaseUrl=this.localBaseUrl]
+       * @param {String} [baseUrl=this.baseUrl]
        * @param {String|RegExp} [pattern=this.pattern]
        * @param {String|Function} [replacement=this.replacement]
        * @param {String} [host=this.__host]
-       * @param {Boolean} [isLocal=this.__isLocal]
        * @return {String}
        */
-      _rewriteUrl(url, pattern = this.pattern, replacement = this.replacement, host = this.__host,
-        isLocal = this.__isLocal) {
+      _rewriteUrl(url, rewriteMatcher = this.rewriteMatcher,
+        isLocal = this.__isLocal, localBaseUrl = this.localBaseUrl, baseUrl = this.baseUrl,
+        pattern = this.pattern, replacement = this.replacement, host = this.__host) {
         // Determine baseUrl
-        const baseUrl = isLocal ?
-          this.localBaseUrl :
-          (this.baseUrl || host.replace(new RegExp(pattern), replacement));
+        baseUrl = isLocal ?
+          localBaseUrl :
+          (baseUrl || host.replace(new RegExp(pattern), replacement));
+        // Remove any trailing slash on baseUrl
+        baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 
         // Build our Query String
         let queryString = this.__getQueryString();
@@ -115,8 +121,12 @@ presend event for iron-ajax.
           queryString = `${bindingChar}${queryString}`;
         }
 
+        // Skip rewrite if it does not match
+        if (url.split(rewriteMatcher).length <= 1) {
+          return url;
+        }
         // Ensure the URL starts with /
-        url = url.split(this.rewriteMatcher).slice(1).join(this.rewriteMatcher);
+        url = url.split(rewriteMatcher).slice(1).join(rewriteMatcher);
         url = `${url.startsWith('/') ? '' : '/'}${url}`;
 
         // Return rewritten url
@@ -141,7 +151,7 @@ presend event for iron-ajax.
             for (let i = 0; i < value.length; i++) {
               queryParts.push(param + '=' + window.encodeURIComponent(value[i]));
             }
-          } else if (value !== null) {
+          } else if (value) {
             queryParts.push(param + '=' + window.encodeURIComponent(value));
           } else if (value === null) {
             queryParts.push(param);

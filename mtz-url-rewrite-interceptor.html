@@ -1,0 +1,175 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="mtz-interceptor-behavior.html">
+
+<!--
+`mtz-url-rewrite-interceptor`
+An implementation of the mtz.InterceptorBehavior that rewrites matching requests request url to a new url onto a
+presend event for iron-ajax.
+
+@demo demo/index.html
+-->
+<dom-module id="mtz-url-rewrite-interceptor">
+  <script>
+    Polymer({
+      is: 'mtz-url-rewrite-interceptor',
+      behaviors: [mtz.InterceptorBehavior],
+      properties: {
+        /* The events to intercept against */
+        events: {
+          type: Array,
+          value() {
+            return [
+              {
+                name: 'iron-ajax-presend',
+                path: 'detail.options.url',
+              },
+            ];
+          },
+        },
+        /* Rewrite requests that start with this value. This value is converted to `RegExp` */
+        rewriteMatcher: {
+          type: String,
+          value: '/',
+        },
+        /* Sets the base URL when on a non-local host. If not set, it fallsback to location.host with `String.replace` */
+        baseUrl: String,
+        /* Sets the base URL when on a localhost */
+        localBaseUrl: String,
+        /**
+         * Allows conditionally applied query params to the request. A function may be passed as a value to determine
+         * the value. Resulting values of `undefined` are removed from the object.
+         *
+         * ```js
+          {
+            // Conditionally applied based on `isLocal` and `location`
+            user: function(isLocal, location) {
+              return isLocal ? 'admin' :
+                location.host.startsWith('d-') ? 'dev' :
+                undefined;
+            },
+            // Always apply a query param
+            foo: 'bar'
+          }
+         * ```
+         */
+        queryParams: Object,
+        /* Used in `String.replace` as the pattern to match. This value is converted to `RegExp` */
+        pattern: String,
+        /* Used in `String.replace` as the replacement `String` or `Function` */
+        replacement: Object,
+        /* Pattern used to match the host for determining if running on a localhost */
+        _localPattern: {
+          type: String,
+          value: 'localhost|127\\.0\\.0\\.1',
+        },
+        /* Stores the isLocal flag. Calculated from the local pattern and location.host */
+        __isLocal: {
+          type: Boolean,
+          readOnly: true,
+          computed: '__computeIsLocal(_localPattern, __host)',
+        },
+        /* Stores the host for determining isLocal */
+        __host: {
+          type: String,
+          readOnly: true,
+          value() {
+            return location.host;
+          },
+        },
+      },
+      /**
+       * Triggers the logic to rewrite the request url.
+       *
+       * @param {CustomEvent} event
+       * @param {String} eventName
+       */
+      intercept(event, eventName) {
+        const path = (this.events.find((item) => item.name === eventName) || {}).path;
+        const reqUrl = path && this.get(path, event);
+        if (reqUrl && reqUrl.startsWith(this.rewriteMatcher)) {
+          this.set(path, this._rewriteUrl(reqUrl), event);
+        }
+      },
+      /**
+       * Rewrites the request url.
+       * @protected
+       *
+       * @param {String} url
+       * @param {String} [rewriteMatcher=this.rewriteMatcher]
+       * @param {Boolean} [isLocal=this.__isLocal]
+       * @param {String} [localBaseUrl=this.localBaseUrl]
+       * @param {String} [baseUrl=this.baseUrl]
+       * @param {String|RegExp} [pattern=this.pattern]
+       * @param {String|Function} [replacement=this.replacement]
+       * @param {String} [host=this.__host]
+       * @return {String}
+       */
+      _rewriteUrl(url, rewriteMatcher = this.rewriteMatcher,
+        isLocal = this.__isLocal, localBaseUrl = this.localBaseUrl, baseUrl = this.baseUrl,
+        pattern = this.pattern, replacement = this.replacement, host = this.__host) {
+        // Determine baseUrl
+        baseUrl = isLocal ?
+          localBaseUrl :
+          (baseUrl || host.replace(new RegExp(pattern), replacement));
+        // Remove any trailing slash on baseUrl
+        baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+
+        // Build our Query String
+        let queryString = this.__getQueryString();
+        if (queryString) {
+          const bindingChar = url.indexOf('?') >= 0 ? '&' : '?';
+          queryString = `${bindingChar}${queryString}`;
+        }
+
+        // Skip rewrite if it does not match
+        if (url.split(rewriteMatcher).length <= 1) {
+          return url;
+        }
+        // Ensure the URL starts with /
+        url = url.split(rewriteMatcher).slice(1).join(rewriteMatcher);
+        url = `${url.startsWith('/') ? '' : '/'}${url}`;
+
+        // Return rewritten url
+        return `${baseUrl}${url}${queryString ? queryString : ''}`;
+      },
+      /**
+       * Generates the query string from the query params object
+       * @private
+       *
+       * @param {Object} [params=this.queryParams]
+       * @return {String}
+       */
+      __getQueryString(params = this.queryParams) {
+        const queryParts = [];
+        let value;
+        Object.keys(params || {}).forEach((param) => {
+          value = params[param];
+          value = typeof value === 'function' ? value(this.__isLocal, this.__host) : value;
+
+          param = window.encodeURIComponent(param);
+          if (Array.isArray(value)) {
+            for (let i = 0; i < value.length; i++) {
+              queryParts.push(param + '=' + window.encodeURIComponent(value[i]));
+            }
+          } else if (value) {
+            queryParts.push(param + '=' + window.encodeURIComponent(value));
+          } else if (value === null) {
+            queryParts.push(param);
+          }
+        });
+        return queryParts.join('&');
+      },
+      /**
+       * Sets the isLocal property based on if the host matches the localPattern
+       * @private
+       *
+       * @param {String|RegExp} localPattern
+       * @param {String} [host=window.location.host]
+       * @return {Boolean}
+       */
+      __computeIsLocal(localPattern, host = location.host) {
+        return new RegExp(localPattern).test(host);
+      },
+    });
+  </script>
+</dom-module>

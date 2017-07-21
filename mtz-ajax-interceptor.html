@@ -1,0 +1,21 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="mtz-ajax-interceptor-behavior.html">
+
+<!--
+`mtz-ajax-interceptor`
+An implementation of the mtz.AjaxInterceptorBehavior that is a generic interceptor listener that only listens to
+interceptors slotted in.
+
+@demo demo/index.html
+-->
+<dom-module id="mtz-ajax-interceptor">
+  <template>
+    <slot></slot>
+  </template>
+  <script>
+    Polymer({
+      is: 'mtz-ajax-interceptor',
+      behaviors: [mtz.AjaxInterceptorBehavior],
+    });
+  </script>
+</dom-module>

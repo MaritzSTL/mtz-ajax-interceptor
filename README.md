@@ -1,5 +1,5 @@
 [![Build Status](https://img.shields.io/travis/MaritzSTL/mtz-ajax-interceptor/master.svg?style=flat-square)](https://travis-ci.org/MaritzSTL/mtz-ajax-interceptor)
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg?style=flat-square)](https://www.webcomponents.org/element/owner/my-element)
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg?style=flat-square)](https://www.webcomponents.org/element/MaritzSTL/mtz-ajax-interceptor)
 
 # \<mtz-ajax-interceptor\>
 

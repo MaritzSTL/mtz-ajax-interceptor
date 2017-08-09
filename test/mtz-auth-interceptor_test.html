@@ -50,7 +50,7 @@
             expect(element._applyHeader.called).to.equal(false);
           });
           it('should call _applyHeader when event.target has with-auth', () => {
-            el.setAttribute('with-auth', true);
+            el.setAttribute('with-auth', '');
             element.intercept(event, eventName);
             expect(element._applyHeader.calledWithMatch(event, eventName)).to.equal(true);
           });

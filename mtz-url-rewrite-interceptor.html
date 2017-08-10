@@ -126,7 +126,7 @@ presend event for iron-ajax.
           return url;
         }
         // Ensure the URL starts with /
-        url = url.split(rewriteMatcher).slice(1).join(rewriteMatcher);
+        url = rewriteMatcher.concat(url.split(rewriteMatcher).slice(1).join(rewriteMatcher));
         url = `${url.startsWith('/') ? '' : '/'}${url}`;
 
         // Return rewritten url

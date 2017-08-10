@@ -101,6 +101,11 @@
             expect(element._rewriteUrl('/api/rest/resource', undefined, false, undefined, undefined, '^(.+?)\\.', '$1-api.', 'subdomain.domain.com'))
               .to.equal(`subdomain-api.domain.com/api/rest/resource`);
           });
+          it('should rewrite the url without removing matcher', () => {
+            element.baseUrl = 'BASE_URL';
+            expect(element._rewriteUrl('/api/rest/resource', '/api/rest', false))
+              .to.equal(`${element.baseUrl}/api/rest/resource`);
+          });
           it('should not modify the url if no queryString is generated', () => {
             expect(element._rewriteUrl('/api/rest/resource', undefined, true))
               .to.equal(`LOCAL_BASE_URL/api/rest/resource`);

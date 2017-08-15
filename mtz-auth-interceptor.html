@@ -41,7 +41,9 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
        * @param {String} eventName
        */
       intercept(event, eventName) {
-        if (event.target.getAttribute('with-auth') === '')
+        // Fallback for 1.x, use composedPath or rootTarget for 2.0
+        const target = event.composedPath && (event.composedPath()[0] || Polymer.dom(event).rootTarget) || event.target;
+        if (target.getAttribute('with-auth') === '')
           this._applyHeader(event, eventName);
       },
       /**

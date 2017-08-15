@@ -21,19 +21,23 @@
     <script>
       describe('mtz-auth-interceptor', () => {
         let element;
-        const el = document.createElement('div'),
-          event = {
-            detail: {
-              options: {}
-            },
-            target: el
+        const el = document.createElement('div');
+        const event = new CustomEvent(eventName = 'iron-ajax-presend', {
+          detail: {
+            options: {},
           },
-          eventName = 'iron-ajax-presend';
+          composed: true,
+        });
 
         beforeEach(() => {
-          event.detail.options.headers = {};
-          event.target = el;
+          event.detail.options.headers = {}
+          // Append for shady DOM;
+          document.body.appendChild(el);
+          el.dispatchEvent(event);
           element = fixture('basic');
+        });
+        afterEach(() => {
+          document.body.removeChild(el);
         });
 
         /* Public Methods */

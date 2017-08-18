@@ -108,9 +108,9 @@ presend event for iron-ajax.
         isLocal = this.__isLocal, localBaseUrl = this.localBaseUrl, baseUrl = this.baseUrl,
         pattern = this.pattern, replacement = this.replacement, host = this.__host) {
         // Determine baseUrl
-        baseUrl = isLocal ?
+        baseUrl = (isLocal ?
           localBaseUrl :
-          (baseUrl || host.replace(new RegExp(pattern), replacement));
+          (baseUrl || (pattern && host.replace(new RegExp(pattern), replacement)))) || host;
         // Remove any trailing slash on baseUrl
         baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 

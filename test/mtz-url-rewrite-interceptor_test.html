@@ -121,9 +121,9 @@
               .to.equal(`LOCAL_BASE_URL/api/rest/resource?oKey=oValue&key=value&key2=value2`);
           });
         });
-        describe('__getQueryString([params])', () => {
+        describe('__getQueryString(url, [params])', () => {
           it('should return a properly serialized string', () => {
-            const queryString = element.__getQueryString({
+            const queryString = element.__getQueryString('/resource', {
               user(isLocal) {
                 return isLocal ? 'admin' : undefined;
               },
@@ -133,6 +133,20 @@
               invalid: undefined,
             });
             expect(queryString).to.equal(`user=admin&test=foo%20bar&delete&arr=a%20b&arr=c`);
+          });
+          it('should return a properly serialized string', () => {
+            const queryString = element.__getQueryString('/resource', {
+              local(isLocal) {
+                return isLocal ? 'Y' : 'N';
+              },
+              host(isLocal, host) {
+                return host.split(':')[0];
+              },
+              url(isLocal, host, url) {
+                return url;
+              },
+            });
+            expect(queryString).to.equal(`local=Y&host=localhost&url=%2Fresource`);
           });
         });
       });

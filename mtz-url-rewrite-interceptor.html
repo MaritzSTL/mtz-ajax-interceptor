@@ -115,7 +115,7 @@ presend event for iron-ajax.
         baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 
         // Build our Query String
-        let queryString = this.__getQueryString();
+        let queryString = this.__getQueryString(url);
         if (queryString) {
           const bindingChar = url.indexOf('?') >= 0 ? '&' : '?';
           queryString = `${bindingChar}${queryString}`;
@@ -139,12 +139,12 @@ presend event for iron-ajax.
        * @param {Object} [params=this.queryParams]
        * @return {String}
        */
-      __getQueryString(params = this.queryParams) {
+      __getQueryString(url, params = this.queryParams) {
         const queryParts = [];
         let value;
         Object.keys(params || {}).forEach((param) => {
           value = params[param];
-          value = typeof value === 'function' ? value(this.__isLocal, this.__host) : value;
+          value = typeof value === 'function' ? value(this.__isLocal, this.__host, url) : value;
 
           param = window.encodeURIComponent(param);
           if (Array.isArray(value)) {

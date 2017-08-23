@@ -120,6 +120,19 @@
             expect(element._rewriteUrl('/api/rest/resource?oKey=oValue', undefined, true))
               .to.equal(`LOCAL_BASE_URL/api/rest/resource?oKey=oValue&key=value&key2=value2`);
           });
+          it('should properly rewrite the url', () => {
+            element.__getQueryString = sinon.stub().returns('');
+            expect(
+              element._rewriteUrl('/api/rest/participants/~/login',
+                                  '/api/rest/',
+                                  false,
+                                  undefined,
+                                  undefined,
+                                  undefined,
+                                  undefined,
+                                  'https://d-demo-ci.salesnext.com')).to
+              .equal('https://d-demo-ci.salesnext.com/api/rest/participants/~/login');
+          });
         });
         describe('__getQueryString(url, [params])', () => {
           it('should return a properly serialized string', () => {
@@ -146,7 +159,7 @@
                 return url;
               },
             });
-            expect(queryString).to.equal(`local=Y&host=localhost&url=%2Fresource`);
+            expect(queryString).to.equal(`local=Y&host=http&url=%2Fresource`);
           });
         });
       });

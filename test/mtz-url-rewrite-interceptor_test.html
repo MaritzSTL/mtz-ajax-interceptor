@@ -79,59 +79,73 @@
             expect(element._rewriteUrl).not.be.called;
           });
         });
-        describe('_rewriteUrl(url, [rewriteMatcher], [isLocal], [localBaseUrl], [baseUrl], [pattern], [replacement], [host])', () => {
+        describe('_rewriteUrl(url, [rewriteMatcher], [isLocal], [localBaseUrl], [baseUrl], [pattern], [replacer], [replacement], [origin])', () => {
+          let localBaseUrl, baseUrl;
+
           beforeEach(() => {
-            element.localBaseUrl = 'LOCAL_BASE_URL';
+            localBaseUrl = 'http://LOCAL_BASE_URL.com';
+            baseUrl = 'https://BASE_URL.com';
           });
           it('should not rewrite the url if it doesn\'t match the url', () => {
             expect(element._rewriteUrl('/api/rest/resource', '/diff', true))
               .to.equal(`/api/rest/resource`);
           })
           it('should use the local base url when isLocal', () => {
-            element.baseUrl = 'BASE_URL';
+            element.baseUrl = baseUrl;
+            element.localBaseUrl = localBaseUrl;
             expect(element._rewriteUrl('/api/rest/resource', undefined, true))
               .to.equal(`${element.localBaseUrl}/api/rest/resource`);
           });
           it('should use the base url when not isLocal and base url is set', () => {
-            element.baseUrl = 'BASE_URL';
+            element.baseUrl = baseUrl;
+            element.localBaseUrl = localBaseUrl;
             expect(element._rewriteUrl('/api/rest/resource', undefined, false))
               .to.equal(`${element.baseUrl}/api/rest/resource`);
           });
           it('should rewrite the host if not local and no base url', () => {
-            expect(element._rewriteUrl('/api/rest/resource', undefined, false, undefined, undefined, '^(.+?)\\.', '$1-api.', 'subdomain.domain.com'))
-              .to.equal(`subdomain-api.domain.com/api/rest/resource`);
+            element.localBaseUrl = localBaseUrl;
+            expect(element._rewriteUrl('/api/rest/resource', undefined, false, undefined, undefined, '^(.+?)\\.', undefined, '$1-api.', 'http://subdomain.domain.com'))
+              .to.equal(`http://subdomain-api.domain.com/api/rest/resource`);
           });
           it('should rewrite the url without removing matcher', () => {
-            element.baseUrl = 'BASE_URL';
+            element.baseUrl = baseUrl;
+            element.localBaseUrl = localBaseUrl;
             expect(element._rewriteUrl('/api/rest/resource', '/api/rest', false))
               .to.equal(`${element.baseUrl}/api/rest/resource`);
           });
           it('should not modify the url if no queryString is generated', () => {
+            element.baseUrl = baseUrl;
+            element.localBaseUrl = localBaseUrl;
             expect(element._rewriteUrl('/api/rest/resource', undefined, true))
-              .to.equal(`LOCAL_BASE_URL/api/rest/resource`);
+              .to.equal(`${element.localBaseUrl}/api/rest/resource`);
           });
           it('should modify the url if queryString is generated', () => {
+            element.baseUrl = baseUrl;
+            element.localBaseUrl = localBaseUrl;
             element.__getQueryString = sinon.stub().returns('key=value&key2=value2');
             expect(element._rewriteUrl('/api/rest/resource', undefined, true))
-              .to.equal(`LOCAL_BASE_URL/api/rest/resource?key=value&key2=value2`);
+              .to.equal(`${element.localBaseUrl}/api/rest/resource?key=value&key2=value2`);
           });
           it('should modify the url if queryString is generated', () => {
+            element.baseUrl = baseUrl;
+            element.localBaseUrl = localBaseUrl;
             element.__getQueryString = sinon.stub().returns('key=value&key2=value2');
             expect(element._rewriteUrl('/api/rest/resource?oKey=oValue', undefined, true))
-              .to.equal(`LOCAL_BASE_URL/api/rest/resource?oKey=oValue&key=value&key2=value2`);
+              .to.equal(`${element.localBaseUrl}/api/rest/resource?oKey=oValue&key=value&key2=value2`);
           });
           it('should properly rewrite the url', () => {
             element.__getQueryString = sinon.stub().returns('');
             expect(
-              element._rewriteUrl('/api/rest/participants/~/login',
+              element._rewriteUrl('/api/rest/login',
                                   '/api/rest/',
                                   false,
                                   undefined,
                                   undefined,
+                                  '.website.com',
                                   undefined,
-                                  undefined,
-                                  'https://d-demo-ci.salesnext.com')).to
-              .equal('https://d-demo-ci.salesnext.com/api/rest/participants/~/login');
+                                  '-api.website.com',
+                                  'https://d-demo.website.com')).to
+              .equal('https://d-demo-api.website.com/api/rest/login');
           });
         });
         describe('__getQueryString(url, [params])', () => {

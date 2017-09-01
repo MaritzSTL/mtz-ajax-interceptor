@@ -56,9 +56,9 @@ presend event for iron-ajax.
         /* Used in `String.replace` as the pattern to match. This value is converted to `RegExp` */
         pattern: String,
         /* Used in `String.replace` as the replacement `Function` */
-        replacer: String,
+        replacer: Function,
         /* Used in `String.replace` as the replacement `String` if replacer `Function` was not passed */
-        replacement: Function,
+        replacement: String,
         /* Pattern used to match the host for determining if running on a localhost */
         _localPattern: {
           type: String,

@@ -55,8 +55,10 @@ presend event for iron-ajax.
         queryParams: Object,
         /* Used in `String.replace` as the pattern to match. This value is converted to `RegExp` */
         pattern: String,
-        /* Used in `String.replace` as the replacement `String` or `Function` */
-        replacement: Object,
+        /* Used in `String.replace` as the replacement `Function` */
+        replacer: Function,
+        /* Used in `String.replace` as the replacement `String` if replacer `Function` was not passed */
+        replacement: String,
         /* Pattern used to match the host for determining if running on a localhost */
         _localPattern: {
           type: String,
@@ -66,14 +68,14 @@ presend event for iron-ajax.
         __isLocal: {
           type: Boolean,
           readOnly: true,
-          computed: '__computeIsLocal(_localPattern, __host)',
+          computed: '__computeIsLocal(_localPattern, __origin)',
         },
-        /* Stores the host for determining isLocal */
-        __host: {
+        /* Stores the origin for determining isLocal */
+        __origin: {
           type: String,
           readOnly: true,
           value() {
-            return location.host;
+            return location.origin;
           },
         },
       },
@@ -100,19 +102,23 @@ presend event for iron-ajax.
        * @param {String} [localBaseUrl=this.localBaseUrl]
        * @param {String} [baseUrl=this.baseUrl]
        * @param {String|RegExp} [pattern=this.pattern]
-       * @param {String|Function} [replacement=this.replacement]
-       * @param {String} [host=this.__host]
+       * @param {Function} [replacer=this.replacer]
+       * @param {String} [replacement=this.replacement]
+       * @param {String} [origin=this.__origin]
        * @return {String}
        */
       _rewriteUrl(url, rewriteMatcher = this.rewriteMatcher,
         isLocal = this.__isLocal, localBaseUrl = this.localBaseUrl, baseUrl = this.baseUrl,
-        pattern = this.pattern, replacement = this.replacement, host = this.__host) {
+        pattern = this.pattern, replacer = this.replacer, replacement = this.replacement, origin = this.__origin) {
         // Determine baseUrl
-        baseUrl = isLocal ?
-          localBaseUrl :
-          (baseUrl || host.replace(new RegExp(pattern), replacement));
+        baseUrl = isLocal ? localBaseUrl : baseUrl || origin;
+        // Handle pattern replacement if provided
+        const replacerValue = replacer || replacement;
+        if (pattern && replacerValue) {
+          baseUrl = baseUrl.replace(new RegExp(pattern), replacerValue);
+        }
         // Remove any trailing slash on baseUrl
-        baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        baseUrl = (baseUrl || '').endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 
         // Build our Query String
         let queryString = this.__getQueryString(url);
@@ -145,7 +151,7 @@ presend event for iron-ajax.
         let value;
         Object.keys(params || {}).forEach((param) => {
           value = params[param];
-          value = typeof value === 'function' ? value(this.__isLocal, this.__host, url) : value;
+          value = typeof value === 'function' ? value(this.__isLocal, this.__origin, url) : value;
 
           param = window.encodeURIComponent(param);
           if (Array.isArray(value)) {

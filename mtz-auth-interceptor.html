@@ -32,7 +32,11 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
           value: 'Authorization'
         },
         /* The value to associate with the provided header */
-        value: String
+        value: String,
+        setRequestHeader: {
+          type: Boolean,
+          value: false,
+        },
       },
       /**
        * Checks the event to see if event.target has with-auth set, if so then _applyHeader is called.
@@ -55,8 +59,14 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
        */
       _applyHeader(event, eventName) {
         const path = (this.events.find((item) => item.name === eventName) || {}).path;
-        if (path)
-          this.set(`${path}.${this.key}`, this.value, event);
+        if (path) {
+          if (!this.setRequestHeader) {
+            this.set(`${path}.${this.key}`, this.value, event);
+          } else {
+            const xhr = this.get(path, event);
+            xhr.setRequestHeader(this.key, this.value);
+          }
+        }
       }
     });
   </script>

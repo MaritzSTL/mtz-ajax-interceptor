@@ -28,13 +28,24 @@
           },
           composed: true,
         });
+        const vaadinEvent = new CustomEvent(vaadinEventName = 'vaadin-request', {
+          detail: {
+            xhr: {},
+          },
+          composed: true,
+        });
 
         beforeEach(() => {
-          event.detail.options.headers = {}
+          event.detail.options.headers = {};
+          vaadinEvent.detail.xhr.setRequestHeader = sinon.spy();
           // Append for shady DOM;
           document.body.appendChild(el);
           el.dispatchEvent(event);
           element = fixture('basic');
+          element.events.push({
+            name: 'vaadin-request',
+            path: 'detail.xhr',
+          });
         });
         afterEach(() => {
           document.body.removeChild(el);
@@ -66,6 +77,13 @@
             element.value = 'value';
             element._applyHeader(event, eventName);
             expect(event.detail.options.headers[element.key]).to.equal(element.value);
+          });
+          it('should set the request header when setRequestHeader attr is set', () => {
+            element.key = 'key';
+            element.value = 'value';
+            element.setRequestHeader = true;
+            element._applyHeader(vaadinEvent, vaadinEventName);
+            expect(vaadinEvent.detail.xhr.setRequestHeader).to.have.been.calledWith(element.key, element.value);
           });
         });
       });

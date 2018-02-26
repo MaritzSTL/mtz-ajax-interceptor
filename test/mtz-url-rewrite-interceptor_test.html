@@ -96,6 +96,12 @@
             expect(element._rewriteUrl('/api/rest/resource', undefined, true))
               .to.equal(`${element.localBaseUrl}/api/rest/resource`);
           });
+          it('should not use the local base url when isLocal and localBaseUrl is undefined', () => {
+            element.baseUrl = baseUrl;
+            element.localBaseUrl = undefined;
+            expect(element._rewriteUrl('/api/rest/resource', undefined, true))
+              .to.equal(`${element.baseUrl}/api/rest/resource`);
+          });
           it('should use the base url when not isLocal and base url is set', () => {
             element.baseUrl = baseUrl;
             element.localBaseUrl = localBaseUrl;

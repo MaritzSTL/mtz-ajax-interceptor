@@ -1,6 +1,6 @@
-language: node_js
-sudo: false
 dist: trusty
+sudo: false
+language: node_js
 node_js: stable
 cache:
   directories:
@@ -12,9 +12,10 @@ install:
   - npm install -g polymer-cli
   - polymer install --variants
 before_script:
-  - polymer lint --rules polymer-2-hybrid --input *.html
+  - polymer lint --input *.html
 script:
-  - xvfb-run polymer test
+  - xvfb-run wct -l firefox
+  - wct -l chrome
 #  - >-
 #    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
 #    fi

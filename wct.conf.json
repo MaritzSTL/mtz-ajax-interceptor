@@ -1,0 +1,23 @@
+{
+  "plugins": {
+    "local": {
+      "browserOptions": {
+        "chrome": ["headless", "disable-gpu", "no-sandbox"]
+      }
+    },
+    "istanbub": {
+      "dir": "./coverage",
+      "reporters": ["text-summary", "lcov"],
+      "include": ["**/*.html"],
+      "exclude": ["**/test/**", "**/demo/**"],
+      "thresholds": {
+        "global": {
+          "statements": 98,
+          "branches": 86,
+          "functions": 100,
+          "lines": 100
+        }
+      }
+    }
+  }
+}

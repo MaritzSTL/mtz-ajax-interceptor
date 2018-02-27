@@ -63,39 +63,41 @@
               <button on-click="intercept">Trigger Interceptors</button>
             </template>
             <script>
-              Polymer({
-                is: 'test-el',
-                properties: {
-                  headerInterceptor: {
-                    type: Boolean,
-                    value: false
-                  },
-                  statusCodeIntercepted: {
-                    type: String,
-                    value: ''
-                  },
-                  queryParams: {
-                    type: Object,
-                    value() {
-                      return {
-                        user(isLocal, location) {
-                          return isLocal ? 'admin' :
-                            location.host.startsWith('d-') ? 'dev' :
-                            undefined;
-                        },
-                        foo: 'bar'
-                      };
+              window.addEventListener('WebComponentsReady', () => {
+                Polymer({
+                  is: 'test-el',
+                  properties: {
+                    headerInterceptor: {
+                      type: Boolean,
+                      value: false
                     },
+                    statusCodeIntercepted: {
+                      type: String,
+                      value: ''
+                    },
+                    queryParams: {
+                      type: Object,
+                      value() {
+                        return {
+                          user(isLocal, location) {
+                            return isLocal ? 'admin' :
+                              location.host.startsWith('d-') ? 'dev' :
+                              undefined;
+                          },
+                          foo: 'bar'
+                        };
+                      },
+                    }
+                  },
+                  intercept() {
+                    this.$.ajax.generateRequest();
+                  },
+                  statusCodeInterceptor(event) {
+                    this.statusCodeIntercepted = this.statusCodeIntercepted.concat('intercepted! ');
+                    console.log('intercepted', event);
                   }
-                },
-                intercept() {
-                  this.$.ajax.generateRequest();
-                },
-                statusCodeInterceptor(event) {
-                  this.statusCodeIntercepted = this.statusCodeIntercepted.concat('intercepted! ');
-                  console.log('intercepted', event);
-                }
-              });
+                });
+              });              
             </script>
           </dom-module>
         </template>

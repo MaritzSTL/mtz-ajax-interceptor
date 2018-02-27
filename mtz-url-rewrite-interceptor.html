@@ -111,7 +111,7 @@ presend event for iron-ajax.
         isLocal = this.__isLocal, localBaseUrl = this.localBaseUrl, baseUrl = this.baseUrl,
         pattern = this.pattern, replacer = this.replacer, replacement = this.replacement, origin = this.__origin) {
         // Determine baseUrl
-        baseUrl = isLocal ? localBaseUrl : baseUrl || origin;
+        baseUrl = (isLocal && localBaseUrl) ? localBaseUrl : (baseUrl || origin);
         // Handle pattern replacement if provided
         const replacerValue = replacer || replacement;
         if (pattern && replacerValue) {

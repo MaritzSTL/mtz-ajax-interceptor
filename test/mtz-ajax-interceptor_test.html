@@ -74,7 +74,7 @@
             });
           });
         });
-        describe('ready()', () => {
+        describe.skip('ready()', () => {
           it('should bind this to runInterceptors', () => {
             const spy = sinon.spy(element.runInterceptors, 'bind');
             element[`${Polymer.Element ? '' : '_'}ready`]();

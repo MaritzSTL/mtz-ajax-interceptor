@@ -1,21 +1,21 @@
 dist: trusty
 sudo: false
 language: node_js
-node_js: stable
-cache:
-  directories:
-    - node_modules
+node_js:
+  - "9"
 addons:
-  firefox: latest
+  firefox: "56"
   chrome: stable
+dist: trusty
+
 install:
   - npm install -g polymer-cli
-  - polymer install --variants
+  - npx polymer install --variants
 before_script:
   - polymer lint --input *.html
 script:
-  - xvfb-run wct -l firefox
-  - wct -l chrome
+  - npm run test
+
 #  - >-
 #    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
 #    fi

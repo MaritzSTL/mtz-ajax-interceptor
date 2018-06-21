@@ -1,7 +1,9 @@
 dist: trusty
 sudo: false
 language: node_js
-node_js: stable
+node_js:
+  - "node"
+  - "9.8.0"
 cache:
   directories:
     - node_modules
@@ -14,8 +16,8 @@ install:
 before_script:
   - polymer lint --input *.html
 script:
-  - xvfb-run wct -l firefox
-  - wct -l chrome
+  - polymer test
+
 #  - >-
 #    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
 #    fi

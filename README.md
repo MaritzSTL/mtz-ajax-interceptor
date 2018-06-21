@@ -13,6 +13,9 @@ An implementation of `mtz-ajax-interceptor-behavior` useful for quick implementa
 ### `<mtz-auth-interceptor>`
 An implementation of the mtz.InterceptorBehavior that injects auth headers based on the event.target containing the [with-auth] attribute. 
 
+### `<mtz-auth-interceptor>`
+An implementation of the mtz.InterceptorBehavior that globally sets the withCredentials option based on the local `withCredentials` property.
+
 ### `<mtz-presend-header-interceptor>`
 An implementation of the mtz.InterceptorBehavior that injects a header:value onto a presend event for iron-ajax.
 

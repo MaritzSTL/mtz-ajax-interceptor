@@ -2,6 +2,8 @@ dist: trusty
 sudo: false
 language: node_js
 node_js: stable
+  - "node"
+  - "9.8.0"
 cache:
   directories:
     - node_modules

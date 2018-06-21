@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>mtz-cookie-interceptor test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../mtz-cookie-interceptor.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <mtz-cookie-interceptor
+          with-credentials
+        ></mtz-cookie-interceptor>
+      </template>
+    </test-fixture>
+
+    <script>
+      describe('mtz-cookie-interceptor', () => {
+        let element;
+        const el = document.createElement('div');
+        const event = new CustomEvent(eventName = 'iron-ajax-presend', {
+          detail: {
+            options: {},
+          },
+          composed: true,
+        });
+        const vaadinEvent = new CustomEvent(vaadinEventName = 'vaadin-request', {
+          detail: {
+            xhr: {},
+          },
+          composed: true,
+        });
+
+        beforeEach(() => {
+          event.detail.options.headers = {};
+          vaadinEvent.detail.xhr.setRequestHeader = sinon.spy();
+          // Append for shady DOM;
+          document.body.appendChild(el);
+          el.dispatchEvent(event);
+          element = fixture('basic');
+          element.events.push({
+            name: 'vaadin-request',
+            path: 'detail.xhr',
+          });
+        });
+        afterEach(() => {
+          document.body.removeChild(el);
+        });
+
+        /* Public Methods */
+        describe('intercept(event)', () => {
+          it('should set withCredentials on the to true', () => {
+            element.intercept(event);
+
+            expect(event.detail.options.withCredentials).to.equal(true);
+          });
+
+          it('should set withCredentials on the to false', () => {
+            element.removeAttribute('with-credentials');
+            element.withCredentials = false;
+            element.intercept(event);
+
+            expect(event.detail.options.withCredentials).to.equal(false);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

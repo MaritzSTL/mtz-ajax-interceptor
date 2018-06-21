@@ -1,0 +1,45 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="mtz-interceptor-behavior.html">
+
+<!--
+`mtz-cookie-interceptor`
+An implementation of the mtz.InterceptorBehavior which globally sets withCredentials on xhr requests
+  based on the property here rather than the [with-credentials] attribute on any iron-ajax
+
+@demo demo/index.html
+-->
+<dom-module id="mtz-cookie-interceptor">
+  <script>
+    Polymer({
+      is: 'mtz-cookie-interceptor',
+      behaviors: [mtz.InterceptorBehavior],
+      properties: {
+        /* The events to intercept against */
+        events: {
+          type: Array,
+          value() {
+            return [
+              {
+                name: 'iron-ajax-presend',
+              }
+            ];
+          }
+        },
+        /* The value to set options.withCredentials to on the ajax request */
+        withCredentials: {
+          type: Boolean,
+          value: false
+        },
+      },
+      /**
+       * sets withCredentials on events
+       *
+       * @param {CustomEvent} event
+       * @param {String} eventName
+       */
+      intercept(event) {
+        event.detail.options.withCredentials = this.withCredentials;
+      },
+    });
+  </script>
+</dom-module>

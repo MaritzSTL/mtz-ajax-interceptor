@@ -14,8 +14,7 @@ install:
 before_script:
   - polymer lint --input *.html
 script:
-  - xvfb-run wct -l firefox
-  - wct -l chrome
+  - xvfb-run wct --npm
 #  - >-
 #    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
 #    fi

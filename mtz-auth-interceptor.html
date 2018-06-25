@@ -72,6 +72,8 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
         } else if (this.setQueryParam) {
           // Append auth as a query param on the url
           let url = event.detail.url;
+          if (!url) return
+
           const bindingChar = url.indexOf('?') >= 0 ? '&' : '?';
 
           let key = this.key.replace('-', '');

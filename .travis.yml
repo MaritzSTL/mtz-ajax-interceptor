@@ -1,10 +1,9 @@
 dist: trusty
 sudo: false
 language: node_js
-node_js:
-  - "9"
+node_js: '9'
 addons:
-  firefox: "56"
+  firefox: stable
   chrome: stable
 dist: trusty
 

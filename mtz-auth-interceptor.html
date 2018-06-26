@@ -37,6 +37,10 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
           type: Boolean,
           value: false,
         },
+        setQueryParam: {
+          type: Boolean,
+          value: false,
+        },
       },
       /**
        * Checks the event to see if event.target has with-auth set, if so then _applyHeader is called.
@@ -48,24 +52,38 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
         // Fallback for 1.x, use composedPath or rootTarget for 2.0
         const target = event.composedPath && (event.composedPath()[0] || Polymer.dom(event).rootTarget) || event.target;
         if (target.getAttribute('with-auth') === '')
-          this._applyHeader(event, eventName);
+          this._applyAuth(event, eventName);
       },
       /**
-       * Attaches a header to the ajax request.
+       * Attaches a auth to the ajax request.
        * @protected
        *
        * @param {CustomEvent} event
        * @param {String} eventName
        */
-      _applyHeader(event, eventName) {
+      _applyAuth(event, eventName) {
         const path = (this.events.find((item) => item.name === eventName) || {}).path;
-        if (path) {
-          if (!this.setRequestHeader) {
-            this.set(`${path}.${this.key}`, this.value, event);
-          } else {
-            const xhr = this.get(path, event);
-            xhr.setRequestHeader(this.key, this.value);
-          }
+        if (!path) return;
+
+        if (this.setRequestHeader) {
+          // Apply auth to the xhr request header
+          const xhr = this.get(path, event);
+          xhr.setRequestHeader(this.key, this.value);
+        } else if (this.setQueryParam) {
+          // Append auth as a query param on the url
+          let url = event.detail.url;
+          if (!url) return
+
+          const bindingChar = url.indexOf('?') >= 0 ? '&' : '?';
+
+          let key = this.key.replace('-', '');
+          key = key.charAt(0).toLowerCase() + key.slice(1);
+
+          url = `${url}${bindingChar}${key}=${this.value}`;
+          this.set(path, url, event);
+        } else {
+          // Apply auth to the designated path on the object
+          this.set(`${path}.${this.key}`, this.value, event);
         }
       }
     });

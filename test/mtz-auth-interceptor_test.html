@@ -34,6 +34,14 @@
           },
           composed: true,
         });
+        const urlRewriteEvent = new CustomEvent(urlRewriteEventName = 'ci-url-rewrite', {
+          detail: {
+            url: 'testing'
+          },
+          composed: true,
+        })
+        console.log('urlRewriteEvent')
+        console.log(urlRewriteEvent)
 
         beforeEach(() => {
           event.detail.options.headers = {};
@@ -45,6 +53,9 @@
           element.events.push({
             name: 'vaadin-request',
             path: 'detail.xhr',
+          },{
+            name: 'ci-url-rewrite',
+            path: 'detail.url',
           });
         });
         afterEach(() => {
@@ -54,36 +65,44 @@
         /* Public Methods */
         describe('intercept(event, eventName)', () => {
           beforeEach(() => {
-            element._applyHeader = sinon.spy();
+            element._applyAuth = sinon.spy();
           });
           afterEach(() => {
             el.removeAttribute('with-auth');
           });
 
-          it('should not call _applyHeader when event.target does not have with-auth', () => {
+          it('should not call _applyAuth when event.target does not have with-auth', () => {
             element.intercept(event, eventName);
-            expect(element._applyHeader.called).to.equal(false);
+            expect(element._applyAuth.called).to.equal(false);
           });
-          it('should call _applyHeader when event.target has with-auth', () => {
+          it('should call _applyAuth when event.target has with-auth', () => {
             el.setAttribute('with-auth', '');
             element.intercept(event, eventName);
-            expect(element._applyHeader.calledWithMatch(event, eventName)).to.equal(true);
+            expect(element._applyAuth.calledWithMatch(event, eventName)).to.equal(true);
           });
         });
         /* Protected Methods */
-        describe('_applyHeader(event, eventName)', () => {
+        describe.only('_applyAuth(event, eventName)', () => {
           it('should update path[key] with the value on event when a path is found', () => {
             element.key = 'key';
             element.value = 'value';
-            element._applyHeader(event, eventName);
+            element._applyAuth(event, eventName);
             expect(event.detail.options.headers[element.key]).to.equal(element.value);
           });
           it('should set the request header when setRequestHeader attr is set', () => {
             element.key = 'key';
             element.value = 'value';
             element.setRequestHeader = true;
-            element._applyHeader(vaadinEvent, vaadinEventName);
+            element._applyAuth(vaadinEvent, vaadinEventName);
             expect(vaadinEvent.detail.xhr.setRequestHeader).to.have.been.calledWith(element.key, element.value);
+          });
+          it.only('should append a query param when setQueryParam attr is set', () => {
+            element.key = 'key';
+            element.value = 'value';
+            element.setQueryParam = true;
+            const initialUrl = urlRewriteEvent.detail.url
+            element._applyAuth(urlRewriteEvent, urlRewriteEventName);
+            expect(urlRewriteEvent.detail.url).to.equal(initialUrl + '?' + element.key + '=' + element.value)
           });
         });
       });

@@ -8,6 +8,7 @@
     "test": "test"
   },
   "scripts": {
+    "start": "npx polymer serve",
     "test": "npx polymer test"
   },
   "repository": {

@@ -72,11 +72,20 @@
           it('should not call _applyAuth when event.target does not have with-auth', () => {
             element.intercept(event, eventName);
             expect(element._applyAuth.called).to.equal(false);
+            expect(event.detail.options.withCredentials).to.equal(undefined);
           });
           it('should call _applyAuth when event.target has with-auth', () => {
             el.setAttribute('with-auth', '');
             element.intercept(event, eventName);
             expect(element._applyAuth.calledWithMatch(event, eventName)).to.equal(true);
+          });
+          it('should set event.detail.options.withCredentials when a value is provided for withCredentials', () => {
+            element.withCredentials = true;
+            element.intercept(event, eventName);
+            expect(event.detail.options.withCredentials).to.equal(true);
+            element.withCredentials = false;
+            element.intercept(event, eventName);
+            expect(event.detail.options.withCredentials).to.equal(false);
           });
         });
         /* Protected Methods */

@@ -1,6 +1,6 @@
 {
   "name": "@mtz/mtz-ajax-interceptor",
-  "version": "0.5.6",
+  "version": "0.6.0",
   "description": "A group of elements to support intercepting ajax requests for injecting headers or handling responses globally.",
   "main": "all-imports.html",
   "directories": {
@@ -8,6 +8,7 @@
     "test": "test"
   },
   "scripts": {
+    "start": "npx polymer serve",
     "test": "npx polymer test"
   },
   "repository": {

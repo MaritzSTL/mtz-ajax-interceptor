@@ -43,6 +43,20 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
           type: Boolean,
           value: false,
         },
+        setJsonPrefix: {
+          type: Boolean,
+          value: false
+        },
+        jsonPrefixMethods: {
+          type: Array,
+          value() {
+            return ['GET'];
+          }
+        },
+        jsonPrefix: {
+          type: String,
+          value: ''
+        }
       },
       /**
        * Checks the event to see if event.target has with-auth set, if so then _applyHeader is called.
@@ -53,6 +67,13 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
       intercept(event, eventName) {
         // Fallback for 1.x, use composedPath or rootTarget for 2.0
         const target = event.composedPath && (event.composedPath()[0] || Polymer.dom(event).rootTarget) || event.target;
+        const method = target.getAttribute('method');
+        //set json prefix
+        if (this.setJsonPrefix &&
+          Boolean(this.jsonPrefix) &&
+          this.jsonPrefixMethods.includes(method)) {
+          target.setAttribute('json-prefix', this.jsonPrefix);
+        }
         if (target.getAttribute('with-auth') === '') {
           this._applyAuth(event, eventName);
         }
@@ -78,7 +99,7 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
         } else if (this.setQueryParam) {
           // Append auth as a query param on the url
           let url = event.detail.url;
-          if (!url) return
+          if (!url) return;
 
           const bindingChar = url.indexOf('?') >= 0 ? '&' : '?';
 

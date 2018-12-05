@@ -52,10 +52,6 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
           value() {
             return ['GET'];
           }
-        },
-        jsonPrefix: {
-          type: String,
-          value: ''
         }
       },
       /**
@@ -69,10 +65,10 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
         const target = event.composedPath && (event.composedPath()[0] || Polymer.dom(event).rootTarget) || event.target;
         const method = target.getAttribute('method');
         //set json prefix
-        if (this.setJsonPrefix &&
-          Boolean(this.jsonPrefix) &&
-          this.jsonPrefixMethods.includes(method)) {
-          target.setAttribute('json-prefix', this.jsonPrefix);
+        if (this.setJsonPrefix && this.jsonPrefixMethods.includes(method)) {
+          const path = this.__getPath(eventName);
+          // Apply json-prefix to request options
+          this.set(`${path}.${this.key}`, this.value || '', event);
         }
         if (target.getAttribute('with-auth') === '') {
           this._applyAuth(event, eventName);
@@ -89,7 +85,7 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
        * @param {String} eventName
        */
       _applyAuth(event, eventName) {
-        const path = (this.events.find((item) => item.name === eventName) || {}).path;
+        const path = this.__getPath(eventName);
         if (!path) return;
 
         if (this.setRequestHeader) {
@@ -112,6 +108,16 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
           // Apply auth to the designated path on the object
           this.set(`${path}.${this.key}`, this.value, event);
         }
+      },
+      /**
+       * Get path from event name
+       * @protected
+       *
+       * @param {String} eventName
+       * @return {String|null}
+       */
+      __getPath(eventName) {
+        return (this.events.find((item) => item.name === eventName) || {}).path;
       }
     });
   </script>

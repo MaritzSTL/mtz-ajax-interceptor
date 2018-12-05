@@ -46,6 +46,7 @@
 
         beforeEach(() => {
           event.detail.options.headers = {};
+          event.detail.options.jsonPrefix = null;
           vaadinEvent.detail.xhr.setRequestHeader = sinon.spy();
           // Append for shady DOM;
           document.body.appendChild(el);
@@ -91,24 +92,38 @@
             expect(event.detail.options.withCredentials).to.equal(false);
           });
           it('should not set json-prefix by default', () => {
-            element.jsonPrefix = '{}@#$';
+            element.key = 'jsonPrefix';
+            element.value = '{}@#$';
+            element.events = [{
+              name: 'iron-ajax-presend',
+              path: 'detail.options'
+            }];
             element.intercept(event, eventName);
-            expect(event.target.getAttribute('json-prefix')).to.equal(null);
+            expect(event.detail.options.jsonPrefix).to.equal(null);
           });
           it('should set json-prefix when setJsonPrefix is true', () => {
             el.setAttribute('method', 'GET');
+            element.key = 'jsonPrefix';
+            element.value = '{}@#$';
             element.setJsonPrefix = true;
-            element.jsonPrefix = '{}@#$';
+            element.events = [{
+              name: 'iron-ajax-presend',
+              path: 'detail.options'
+            }];
             element.intercept(event, eventName);
-            expect(el.getAttribute('json-prefix')).to.equal('{}@#$');
-            el.removeAttribute('json-prefix');
+            expect(event.detail.options.jsonPrefix).to.equal('{}@#$');
           });
           it('should not set json-prefix when event method does not exist in jsonPrefixMethods', () => {
             el.setAttribute('method', 'POST');
+            element.key = 'jsonPrefix';
+            element.value = '{}@#$';
             element.setJsonPrefix = true;
-            element.jsonPrefix = '{}@#$';
+            element.events = [{
+              name: 'iron-ajax-presend',
+              path: 'detail.options'
+            }];
             element.intercept(event, eventName);
-            expect(event.target.getAttribute('json-prefix')).to.equal(null);
+            expect(event.detail.options.jsonPrefix).to.equal(null);
           });
         });
         /* Protected Methods */

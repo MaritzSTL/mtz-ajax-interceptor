@@ -1,7 +1,7 @@
 {
   "name": "mtz-ajax-interceptor",
   "description": "A group of elements to support intercepting ajax requests for injecting headers or handling responses globally.",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "all-imports.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.9 || ^2.6"

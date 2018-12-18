@@ -52,6 +52,12 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
           value() {
             return ['GET'];
           }
+        },
+        excludeFileTypes: {
+          type: Array,
+          value() {
+            return ['blob'];
+          }
         }
       },
       /**
@@ -65,12 +71,12 @@ An implementation of the mtz.InterceptorBehavior that injects auth headers based
         const target = event.composedPath && (event.composedPath()[0] || Polymer.dom(event).rootTarget) || event.target;
         const method = target.getAttribute('method');
         //set json prefix
-        if (this.setJsonPrefix && this.jsonPrefixMethods.includes(method)) {
+        if (this.setJsonPrefix && this.jsonPrefixMethods.includes(method) && !this.excludeFileTypes.includes(target.handleAs)) {
           const path = this.__getPath(eventName);
           // Apply json-prefix to request options
           this.set(`${path}.${this.key}`, this.value || '', event);
         }
-        if (target.getAttribute('with-auth') === '') {
+        if (target.getAttribute('with-auth') === '' && !this.setJsonPrefix) {
           this._applyAuth(event, eventName);
         }
         if (typeof this.withCredentials === 'boolean') {
